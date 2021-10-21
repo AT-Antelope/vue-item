@@ -22,24 +22,30 @@
         class="login-form"
         size="medium"
       >
-        <el-form-item prop="pass" class="form-item">
+        <el-form-item prop="username" class="form-item">
           <label>邮箱</label>
-          <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
+          <el-input type="text" v-model="ruleForm.username" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item prop="checkPass" class="form-item">
+        <el-form-item prop="password" class="form-item">
           <label>密码</label>
           <el-input
             type="password"
-            v-model="ruleForm.checkPass"
+            v-model="ruleForm.password"
             autocomplete="off"
+            minlength="8"
+            maxlength="16"
           ></el-input>
         </el-form-item>
-
-        <el-form-item prop="age" class="form-item">
+        <el-form-item prop="securityCode" class="form-item">
           <label>验证码</label>
-          <el-row :gutter="20">
+          <!-- gutter,栅格间隔 -->
+          <el-row :gutter="11">
             <el-col :span="16">
-              <el-input v-model.number="ruleForm.age"></el-input>
+              <el-input
+                v-model.number="ruleForm.securityCode"
+                minlength="6"
+                maxlength="6"
+              ></el-input>
             </el-col>
             <el-col :span="8">
               <el-button type="success" class="block">获取验证码</el-button>
@@ -64,40 +70,46 @@
 export default {
   name: "login",
   data() {
-    var checkAge = (rule, value, callback) => {
-      if (!value) {
-        return callback(new Error("年龄不能为空"));
+    // 验证用户名为邮箱
+    var validateUsername = (rule, value, callback) => {
+      let reg = /^([a-zA-z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+      if (value === "") {
+        callback(new Error("请输入用户名"));
+        // 输入格式与正则表达式reg不符时
+      } else if (!reg.test(value)) {
+        callback(new Error("请输入正确的邮箱格式"));
+      } else {
+        callback(); //返回true
       }
-      setTimeout(() => {
-        if (!Number.isInteger(value)) {
-          callback(new Error("请输入数字值"));
-        } else {
-          if (value < 18) {
-            callback(new Error("必须年满18岁"));
-          } else {
-            callback();
-          }
-        }
-      }, 1000);
     };
-    var validatePass = (rule, value, callback) => {
+    // 验证密码
+    var validatePassword = (rule, value, callback) => {
+      let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{8,16}$/;
       if (value === "") {
         callback(new Error("请输入密码"));
+      } else if (!reg.test(value)) {
+        callback(new Error("密码长度应为8到16位，且同时包含字母和数字"));
       } else {
-        if (this.ruleForm.checkPass !== "") {
-          this.$refs.ruleForm.validateField("checkPass");
-        }
         callback();
       }
     };
-    var validatePass2 = (rule, value, callback) => {
-      if (value === "") {
-        callback(new Error("请再次输入密码"));
-      } else if (value !== this.ruleForm.pass) {
-        callback(new Error("两次输入密码不一致!"));
-      } else {
-        callback();
+    // 验证验证码
+    var validateSecurityCode = (rule, value, callback) => {
+      let reg = /^[0-9]{6}$/;
+      if (!value) {
+        return callback(new Error("请输入验证码"));
       }
+      setTimeout(() => {
+        // if (!Number.isInteger(value)) {
+        //   callback(new Error("验证码格式有误"));
+        // } else {
+        if (!reg.test(value)) {
+          callback(new Error("验证码格式有误"));
+        } else {
+          callback();
+          // }
+        }
+      }, 1000);
     };
     return {
       menuTab: [
@@ -106,14 +118,14 @@ export default {
       ],
       // 表单数据
       ruleForm: {
-        pass: "",
-        checkPass: "",
-        age: "",
+        username: "",
+        password: "",
+        securityCode: "",
       },
       rules: {
-        pass: [{ validator: validatePass, trigger: "blur" }],
-        checkPass: [{ validator: validatePass2, trigger: "blur" }],
-        age: [{ validator: checkAge, trigger: "blur" }],
+        username: [{ validator: validateUsername, trigger: "blur" }],
+        password: [{ validator: validatePassword, trigger: "blur" }],
+        securityCode: [{ validator: validateSecurityCode, trigger: "blur" }],
       },
     };
   },
