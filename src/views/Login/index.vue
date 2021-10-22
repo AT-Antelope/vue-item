@@ -67,16 +67,18 @@
   </div>
 </template>
 <script>
+// 在vue.config.js里配置了解析别名(alias)
+// 同样配置了自动添加后缀名后，可以省略后缀名
+import { stripscript, validateEmail } from "@/utils/validate";
 export default {
   name: "login",
   data() {
     // 验证用户名为邮箱
     var validateUsername = (rule, value, callback) => {
-      let reg = /^([a-zA-z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
       if (value === "") {
         callback(new Error("请输入用户名"));
         // 输入格式与正则表达式reg不符时
-      } else if (!reg.test(value)) {
+      } else if (!validateEmail(value)) {
         callback(new Error("请输入正确的邮箱格式"));
       } else {
         callback(); //返回true
@@ -84,6 +86,11 @@ export default {
     };
     // 验证密码
     var validatePassword = (rule, value, callback) => {
+      // 过滤后的数据，更新绑定的数据，
+      this.ruleForm.password = stripscript(value);
+      // 再重新传给value来进行验证判断
+      value = this.ruleForm.password;
+
       let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{8,16}$/;
       if (value === "") {
         callback(new Error("请输入密码"));
@@ -95,6 +102,11 @@ export default {
     };
     // 验证验证码
     var validateSecurityCode = (rule, value, callback) => {
+      // 过滤后的数据，更新绑定的数据，
+      this.ruleForm.securityCode = stripscript(value);
+      // 再重新传给value来进行验证判断
+      value = this.ruleForm.securityCode;
+
       let reg = /^[0-9]{6}$/;
       if (!value) {
         return callback(new Error("请输入验证码"));
@@ -112,6 +124,7 @@ export default {
       }, 1000);
     };
     return {
+      // 顶部选项卡
       menuTab: [
         { txt: "login", active: true },
         { txt: "register", active: false },
