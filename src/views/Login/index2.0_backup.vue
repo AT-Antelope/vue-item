@@ -86,22 +86,18 @@
   </div>
 </template>
 <script>
-import { reactive, ref, isRef, toRef, onMounted } from "@vue/composition-api";
 // 在vue.config.js里配置了解析别名(alias)
 // 同样配置了自动添加后缀名后，可以省略后缀名
 import { stripscript, validateEmail, validatePwd, validateCode } from "@/utils/validate";
 export default {
   name: "login",
-  // 这里面放置data数据、生命周期、自定义的函数
-  //   setup(props, context) {
-  // 解构写法
-  setup(props, { refs }) {
+  data() {
     // 验证用户名为邮箱
-    let validateUsername = (rule, value, callback) => {
+    var validateUsername = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("请输入用户名"));
         // 输入格式与正则表达式reg不符时
-      } else if (!validateEmail(value)) {
+      } else if (validateEmail(value)) {
         callback(new Error("请输入正确的邮箱格式"));
       } else {
         callback(); //返回true
@@ -109,15 +105,15 @@ export default {
     };
 
     // 验证密码
-    let validatePassword = (rule, value, callback) => {
+    var validatePassword = (rule, value, callback) => {
       // 过滤后的数据，更新绑定的数据，
-      ruleForm.password = stripscript(value);
+      this.ruleForm.password = stripscript(value);
       // 再重新传给value来进行验证判断
-      value = ruleForm.password;
+      value = this.ruleForm.password;
 
       if (value === "") {
         callback(new Error("请输入密码"));
-      } else if (!validatePwd(value)) {
+      } else if (validatePwd(value)) {
         callback(new Error("密码长度应为8到16位，且同时包含字母和数字"));
       } else {
         callback();
@@ -125,20 +121,20 @@ export default {
     };
 
     // 验证重复密码
-    let validateSecurityCodeVerify = (rule, value, callback) => {
+    var validateSecurityCodeVerify = (rule, value, callback) => {
       // 如果modoelFlag为login时，说明页面上没有重复密码输入框，则跳过验证
       // 由于使用的是v-show，login页面提交时重复密码输入框只是隐藏了，还是会进行验证
-      if (model === "login") {
+      if (this.model === "login") {
         callback();
       }
       // 过滤后的数据，更新绑定的数据，
-      ruleForm.passwordVerify = stripscript(value);
+      this.ruleForm.passwordVerify = stripscript(value);
       // 再重新传给value来进行验证判断
-      value = ruleForm.passwordVerify;
+      value = this.ruleForm.passwordVerify;
 
       if (value === "") {
         callback(new Error("请再次输入密码"));
-      } else if (value != ruleForm.password) {
+      } else if (value != this.ruleForm.password) {
         callback(new Error("重复密码不正确"));
       } else {
         callback();
@@ -146,71 +142,72 @@ export default {
     };
 
     // 验证验证码
-    let validateSecurityCode = (rule, value, callback) => {
+    var validateSecurityCode = (rule, value, callback) => {
+      //  使用验证会出现数字开头会被删去数字，以及数字开头时无法输入字母
+      //   // 过滤后的数据，更新绑定的数据，
+      //   this.ruleForm.securityCode = stripscript(value);
+      //   // 再重新传给value来进行验证判断
+      //   value = this.ruleForm.securityCode;
+
       if (value === "") {
         return callback(new Error("请输入验证码"));
       }
       setTimeout(() => {
+        // if (!Number.isInteger(value)) {
+        //   callback(new Error("验证码格式有误"));
+        // } else {
         if (!validateCode(value)) {
           callback(new Error("请填写正确的验证码"));
         } else {
           callback();
+          // }
         }
       }, 1000);
     };
-
-    /**
-     * 声明数据
-     * reactive，声明的数据是对象类型时
-     */
-    // 顶部选项卡
-    const menuTab = reactive([
-      { txt: "登录", active: true, modelFlag: "login" },
-      { txt: "注册", active: false, modelFlag: "register" },
-    ]);
-
-    /**
-     *  ref，声明数据是基础类型时，取值时使用.value
-     */
-    //   模块值，顶部选项卡的flag
-    const model = ref("login");
-    // 判断是否为基础类型
-    // console.log(isRef( model) ? "model是数据类型" : "model是对象类型");
-    // console.log(isRef(menuTab) ? "menuTab是数据类型" : "menuTab是对象类型");
-
-    // 表单绑定数据
-    const ruleForm = reactive({
-      username: "",
-      password: "",
-      securityCode: "",
-      passwordVerify: "",
-    });
-
-    const rules = reactive({
-      username: [{ validator: validateUsername, trigger: "blur" }],
-      password: [{ validator: validatePassword, trigger: "blur" }],
-      securityCode: [{ validator: validateSecurityCode, trigger: "blur" }],
-      passwordVerify: [{ validator: validateSecurityCodeVerify, trigger: "blur" }],
-    });
+    return {
+      // 顶部选项卡
+      menuTab: [
+        { txt: "登录", active: true, modelFlag: "login" },
+        { txt: "注册", active: false, modelFlag: "register" },
+      ],
+      // 表单数据
+      ruleForm: {
+        username: "",
+        password: "",
+        securityCode: "",
+        passwordVerify: "",
+      },
+      rules: {
+        username: [{ validator: validateUsername, trigger: "blur" }],
+        password: [{ validator: validatePassword, trigger: "blur" }],
+        securityCode: [{ validator: validateSecurityCode, trigger: "blur" }],
+        passwordVerify: [{ validator: validateSecurityCodeVerify, trigger: "blur" }],
+      },
+      //   模块值，顶部选项卡的flag
+      model: "login",
+    };
+  },
+  created() {},
+  mounted() {},
+  methods: {
+    // vue 数据驱动视频渲染
+    // js 操作DOM元素
 
     // 改变导航栏选项卡的当前激活状态
-    const toggleMenu = (item) => {
+    toggleMenu(item) {
       // 曾尝试传入index或使用target/currentTarget来使当前对象改变，失败
       // 先把menuTab中的所有item的active都改为false
-      menuTab.forEach((e) => {
+      this.menuTab.forEach((e) => {
         e.active = false;
       });
       // 再把当前的更改为true，高亮
       item.active = true;
       //    更新模块值为当前选项卡的model属性，用于选择其他选项框时改变确认密码输入框的显示状态
-      model.value = item.modelFlag;
-    };
-
+      this.model = item.modelFlag;
+    },
     // 表单数据
-    const submitForm = (formName) => {
-      // 原为$refs[formName]
-      // context.refs[formName]，在setup()里传入{refs}，即解构，省略写法
-      refs[formName].validate((valid) => {
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
         if (valid) {
           alert("submit!");
         } else {
@@ -218,27 +215,8 @@ export default {
           return false;
         }
       });
-    };
-
-    /**
-     * 声明周期
-     * 挂载完成后
-     */
-    onMounted(() => {});
-
-    return {
-      menuTab,
-      model,
-      ruleForm,
-      rules,
-      toggleMenu,
-      submitForm,
-    };
+    },
   },
-  data() {
-    return {};
-  },
-  //   created() {},  // vue3.0已去除
 };
 </script>
 <style lang="scss" scoped>
