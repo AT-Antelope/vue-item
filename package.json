@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@vue/composition-api": "^1.2.4",
+    "axios": "^0.23.0",
     "core-js": "^3.6.5",
     "element-ui": "^2.15.6",
     "normalize-scss": "^7.0.1",

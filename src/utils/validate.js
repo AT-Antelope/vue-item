@@ -33,3 +33,8 @@ export function validateCode(string) {
   let reg = /^[0-9]{6}$/;
   return reg.test(string) ? true : false;
 }
+
+/**
+ * 没有使用export default时，可以同时声明多个export
+ * 在其他文件mport引入时，需要花括号
+ */
