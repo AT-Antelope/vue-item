@@ -66,7 +66,9 @@
               ></el-input>
             </el-col>
             <el-col :span="8">
-              <el-button type="success" class="block">获取验证码</el-button>
+              <el-button type="success" class="block" @click="getSms()"
+                >获取验证码</el-button
+              >
             </el-col>
           </el-row>
         </el-form-item>
@@ -86,8 +88,7 @@
   </div>
 </template>
 <script>
-import service from "@/utils/request";
-import {} from "@/api/login.js";
+import { GetSms } from "@/api/login.js";
 import { reactive, ref, isRef, toRef, onMounted } from "@vue/composition-api";
 // 在vue.config.js里配置了解析别名(alias)
 // 同样配置了自动添加后缀名后，可以省略后缀名
@@ -208,28 +209,37 @@ export default {
       model.value = item.modelFlag;
     };
 
-    // 表单数据
+    // 获取验证码
+    const getSms = () => {
+      let data = {
+        username: ruleForm.username,
+        module: "login",
+      };
+      GetSms(data);
+    };
+
+    // 表单数据提交
     const submitForm = (formName) => {
-      axios
-        .request({
-          method: "get",
-          url: "/user/123",
-          data: {
-            firstName: "Fred",
-            lastName: "Flintstone",
-          },
-        })
-        .then(function (response) {
-          // 处理成功情况
-          console.log(response);
-        })
-        .catch(function (error) {
-          // 处理错误情况
-          console.log(error);
-        })
-        .then(function () {
-          // 总是会执行
-        });
+      //   axios
+      //     .request({
+      //       method: "get",
+      //       url: "/user/123",
+      //       data: {
+      //         firstName: "Fred",
+      //         lastName: "Flintstone",
+      //       },
+      //     })
+      //     .then(function (response) {
+      //       // 处理成功情况
+      //       console.log(response);
+      //     })
+      //     .catch(function (error) {
+      //       // 处理错误情况
+      //       console.log(error);
+      //     })
+      //     .then(function () {
+      //       // 总是会执行
+      //     });
 
       // 原为$refs[formName]
       // context.refs[formName]，在setup()里传入{refs}，即解构，省略写法
@@ -247,7 +257,9 @@ export default {
      * 声明周期
      * 挂载完成后
      */
-    onMounted(() => {});
+    onMounted(() => {
+      //   console.log(process.env.VUE_APP_ABC);
+    });
 
     return {
       menuTab,
@@ -256,6 +268,7 @@ export default {
       rules,
       toggleMenu,
       submitForm,
+      getSms,
     };
   },
   data() {
