@@ -4,7 +4,7 @@ import service from "@/utils/request";
  * getSms
  */
 export function GetSms(data) {
-  service.request({
+  return service.request({
     method: "post",
     url: "/getSms/",
     data,

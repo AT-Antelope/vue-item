@@ -79,7 +79,8 @@
             @click="submitForm('ruleForm')"
             class="block login-btn"
             plain
-            >提交</el-button
+            :disabled="loginButtonStatus"
+            >{{ model === "login" ? "登录" : "注册" }}</el-button
           >
         </el-form-item>
       </el-form>
@@ -181,6 +182,9 @@ export default {
     // console.log(isRef( model) ? "model是数据类型" : "model是对象类型");
     // console.log(isRef(menuTab) ? "menuTab是数据类型" : "menuTab是对象类型");
 
+    // 登录按钮禁用状态
+    const loginButtonStatus = ref(true);
+
     // 表单绑定数据
     const ruleForm = reactive({
       username: "",
@@ -211,6 +215,14 @@ export default {
 
     // 获取验证码
     const getSms = () => {
+      // 进行提示
+      //等价于===false
+      if (ruleForm.username == "") {
+        // $message.error("邮箱不能为空"); //element-ui的message提示_!?报错找不到message(全局变量?)
+        return false;
+      }
+
+      // 请求的接口
       let data = {
         username: ruleForm.username,
         module: "login",
@@ -264,6 +276,7 @@ export default {
     return {
       menuTab,
       model,
+      loginButtonStatus,
       ruleForm,
       rules,
       toggleMenu,
