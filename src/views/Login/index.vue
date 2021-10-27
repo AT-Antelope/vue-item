@@ -24,13 +24,20 @@
         size="medium"
       >
         <el-form-item prop="username" class="form-item">
-          <label>邮箱</label>
-          <el-input type="text" v-model="ruleForm.username" autocomplete="off"></el-input>
+          <!-- label 里的 for属性，与某个元素的id绑定，点击此label时聚焦点于绑定元素上 -->
+          <label for="username">邮箱</label>
+          <el-input
+            id="username"
+            type="text"
+            v-model="ruleForm.username"
+            autocomplete="off"
+          ></el-input>
         </el-form-item>
 
         <el-form-item prop="password" class="form-item">
-          <label>密码</label>
+          <label for="password">密码</label>
           <el-input
+            id="password"
             type="password"
             v-model="ruleForm.password"
             autocomplete="off"
@@ -44,8 +51,9 @@
           class="form-item"
           v-show="model === 'register'"
         >
-          <label>确认密码</label>
+          <label for="passwordVerify">确认密码</label>
           <el-input
+            id="passwordVerify"
             type="password"
             v-model="ruleForm.passwordVerify"
             autocomplete="off"
@@ -55,18 +63,21 @@
         </el-form-item>
 
         <el-form-item prop="securityCode" class="form-item">
-          <label>验证码</label>
+          <label for="securityCode">验证码</label>
           <!-- gutter,栅格间隔 -->
           <el-row :gutter="11">
             <el-col :span="16">
               <el-input
+                id="securityCode"
                 v-model.number="ruleForm.securityCode"
                 minlength="6"
                 maxlength="6"
               ></el-input>
             </el-col>
             <el-col :span="8">
-              <el-button type="success" class="block">获取验证码</el-button>
+              <el-button type="success" class="block" @click="getSms()"
+                >获取验证码</el-button
+              >
             </el-col>
           </el-row>
         </el-form-item>
@@ -77,7 +88,8 @@
             @click="submitForm('ruleForm')"
             class="block login-btn"
             plain
-            >提交</el-button
+            :disabled="loginButtonStatus"
+            >{{ model === "login" ? "登录" : "注册" }}</el-button
           >
         </el-form-item>
       </el-form>
@@ -86,18 +98,27 @@
   </div>
 </template>
 <script>
-import service from "@/utils/request";
-import {} from "@/api/login.js";
+import { GetSms } from "@/api/login.js";
 import { reactive, ref, isRef, toRef, onMounted } from "@vue/composition-api";
 // 在vue.config.js里配置了解析别名(alias)
 // 同样配置了自动添加后缀名后，可以省略后缀名
 import { stripscript, validateEmail, validatePwd, validateCode } from "@/utils/validate";
+
 export default {
   name: "login",
-  // 这里面放置data数据、生命周期、自定义的函数
+  /**
+   * 这里面放置data数据、生命周期、自定义的函数
+   * 解构写法
+   *    attrs: (...)        ==> this.$attr
+        emit: (...)         ==> this.$emit
+        isServer: (...)     ==> this.$isServer
+        listeners: (...)    ==> this.$listeners
+        parent: (...)       ==> this.$parent
+        refs: (...)         ==> this.$refs
+        root: (...)         ==> this
+   */
   //   setup(props, context) {
-  // 解构写法
-  setup(props, { refs }) {
+  setup(props, { refs, root }) {
     // 验证用户名为邮箱
     let validateUsername = (rule, value, callback) => {
       if (value === "") {
@@ -180,6 +201,9 @@ export default {
     // console.log(isRef( model) ? "model是数据类型" : "model是对象类型");
     // console.log(isRef(menuTab) ? "menuTab是数据类型" : "menuTab是对象类型");
 
+    // 登录按钮禁用状态
+    const loginButtonStatus = ref(true);
+
     // 表单绑定数据
     const ruleForm = reactive({
       username: "",
@@ -208,29 +232,42 @@ export default {
       model.value = item.modelFlag;
     };
 
-    // 表单数据
-    const submitForm = (formName) => {
-      axios
-        .request({
-          method: "get",
-          url: "/user/123",
-          data: {
-            firstName: "Fred",
-            lastName: "Flintstone",
-          },
-        })
-        .then(function (response) {
-          // 处理成功情况
-          console.log(response);
-        })
-        .catch(function (error) {
-          // 处理错误情况
-          console.log(error);
-        })
-        .then(function () {
-          // 总是会执行
-        });
+    // 获取验证码
+    const getSms = () => {
+      // 进行提示
+      //等价于===false
+      //   前端拦截，可减少服务器承载压力
+      if (ruleForm.username == "") {
+        root.$message({ showClose: true, message: "邮箱不能为空", type: "error" }); //element-ui的message组件_!?报错找不到message(全局变量?)
+        return false;
+      }
+      // 后端接口问题: 出现违反规则也返回成功的情况，进行重新判断一次，或许已修复
+      //   if (validateEmail(ruleForm.username)) {
+      //     root.$message.error("邮箱格式有误，请重新输入!");
+      //     return false;
+      //   }
 
+      // 请求的接口，获取验证码
+      let request = {
+        username: ruleForm.username,
+        module: "login",
+      };
+      GetSms(request)
+        .then((response) => {
+          root.$message({
+            showClose: true,
+            duration: 30000,
+            message: response.data.message,
+            type: "success",
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+
+    // 表单数据提交
+    const submitForm = (formName) => {
       // 原为$refs[formName]
       // context.refs[formName]，在setup()里传入{refs}，即解构，省略写法
       refs[formName].validate((valid) => {
@@ -247,15 +284,19 @@ export default {
      * 声明周期
      * 挂载完成后
      */
-    onMounted(() => {});
+    onMounted(() => {
+      //   console.log(process.env.VUE_APP_ABC);
+    });
 
     return {
       menuTab,
       model,
+      loginButtonStatus,
       ruleForm,
       rules,
       toggleMenu,
       submitForm,
+      getSms,
     };
   },
   data() {

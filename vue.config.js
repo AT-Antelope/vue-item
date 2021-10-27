@@ -58,7 +58,18 @@ module.exports = {
     https: false, // 编译失败时刷新页面
     hot: true, // 开启热加载
     hotOnly: false,
-    proxy: null, // 设置代理
+    proxy: {
+      "/devApi": {
+        // 此处的写法，目的是为了 将 /api 替换成 https://www.baidu.com/
+        target: "http://old.web-jshtml.cn/vue_admin_api",
+        // 允许跨域
+        changeOrigin: true,
+        ws: true,
+        pathRewrite: {
+          "^/devApi": "",
+        },
+      },
+    }, // 设置代理
     overlay: {
       // 全屏模式下是否显示脚本错误
       warnings: true,
