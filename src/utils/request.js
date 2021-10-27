@@ -2,6 +2,7 @@
  * views/login.vue --> api/login.js --> utils/request.js
  */
 import axios from "axios";
+import { Message } from "element-ui";
 
 const BASEURL = process.env.NODE_ENV === "production" ? "" : "/devApi";
 
@@ -28,11 +29,22 @@ service.interceptors.response.use(
     // 2xx 范围内的状态码都会触发该函数。
     // 对响应数据做点什么
     // alert(...response);
-    return response;
+    let data = response.data;
+    let msg = data.message;
+
+    //和后端说好，成功时返回0，有问题时返回非0
+    if (data.resCode !== 0) {
+      // console.log(response);
+      Message.error(msg);
+      return Promise.reject(data);
+    } else {
+      return response;
+    }
   },
   function (error) {
     // 超出 2xx 范围的状态码都会触发该函数。
     // 对响应错误做点什么
+    Message.error(msg);
     return Promise.reject(error);
   }
 );
