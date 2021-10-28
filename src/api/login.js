@@ -21,3 +21,10 @@ export function GetSms(data) {
  * 注册
  * reg
  */
+export function Register(data) {
+  return service.request({
+    method: "post",
+    url: "/register/",
+    data,
+  });
+}

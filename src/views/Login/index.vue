@@ -65,11 +65,12 @@
         <el-form-item prop="securityCode" class="form-item">
           <label for="securityCode">验证码</label>
           <!-- gutter,栅格间隔 -->
+          <!-- 原为v-model.number，去除.number后，解决输入框中输入数字后不能输入字母的问题 -->
           <el-row :gutter="11">
             <el-col :span="16">
               <el-input
                 id="securityCode"
-                v-model.number="ruleForm.securityCode"
+                v-model="ruleForm.securityCode"
                 minlength="6"
                 maxlength="6"
               ></el-input>
@@ -86,10 +87,14 @@
           </el-row>
         </el-form-item>
 
+        <!-- 
+             @click="submitForm('ruleForm')"
+            el-form里改成了loginForm，所以传参也要改成loginForm
+        -->
         <el-form-item>
           <el-button
             type="danger"
-            @click="submitForm('ruleForm')"
+            @click="submitForm('loginForm')"
             class="block login-btn"
             plain
             :disabled="loginButtonStatus"
@@ -102,7 +107,7 @@
   </div>
 </template>
 <script>
-import { GetSms } from "@/api/login.js";
+import { GetSms, Register } from "@/api/login.js";
 import { reactive, ref, isRef, toRef, onMounted } from "@vue/composition-api";
 // 在vue.config.js里配置了解析别名(alias)
 // 同样配置了自动添加后缀名后，可以省略后缀名
@@ -248,10 +253,13 @@ export default {
       //    更新模块值为当前选项卡的model属性，用于选择其他选项框时改变确认密码输入框的显示状态
       model.value = item.modelFlag;
 
-      //重置表单
+      // 重置表单
       //   this.$refs[formName].resetFields();    // 2.0写法
       //   refs["loginForm"].resetFields();   // 3.0
       refs.loginForm.resetFields();
+
+      //   重置获取验证码按钮的文本
+      securityCodeStatus.text = "获取验证码";
     };
 
     // 获取验证码
@@ -278,39 +286,60 @@ export default {
 
       // 修改获取验证码按钮禁用状态
       securityCodeStatus.status = true;
-      securityCodeStatus.text = "请求中";
+      securityCodeStatus.text = "获取中";
 
-      // 模拟长时间请求
-      setTimeout(() => {
-        GetSms(request)
-          .then((response) => {
-            root.$message({
-              showClose: true,
-              duration: 30000,
-              message: response.data.message,
-              type: "success",
-            });
-
-            // 启用登录/注册按钮
-            loginButtonStatus.value = false;
-
-            // 倒计时定时器
-            countDown(10);
-          })
-          .catch((error) => {
-            console.log(error);
+      // 发送获取验证码请求
+      GetSms(request)
+        .then((response) => {
+          root.$message({
+            showClose: true,
+            duration: 30000,
+            message: response.data.message,
+            type: "success",
           });
-      }, 2000);
+
+          // 启用登录/注册按钮
+          loginButtonStatus.value = false;
+
+          // 倒计时定时器
+          countDown(5);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     };
 
     // 表单数据提交
     const submitForm = (formName) => {
       // 原为$refs[formName]
       // context.refs[formName]，在setup()里传入{refs}，即解构，省略写法
+      //   等于refs.forName
       refs[formName].validate((valid) => {
         if (valid) {
+          // 声明参数数据
+          let requestData = {
+            username: ruleForm.username,
+            password: ruleForm.password,
+            code: ruleForm.securityCode,
+          };
+          // 创建请求
+          Register(requestData)
+            .then((response) => {
+              let data = response.data;
+              root.$message({
+                message: data.message,
+                type: "success",
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
           alert("submit!");
         } else {
+          root.$message({
+            message: "提交失败",
+            type: "error",
+          });
           console.log("error submit!!");
           return false;
         }
@@ -323,15 +352,16 @@ export default {
     const countDown = (countDownTime) => {
       let time = countDownTime;
       timerCountDown.value = setInterval(() => {
-        if (time <= 1) {
+        time--; // time = time--;
+        if (time <= 0) {
           // 清除定时器
           clearInterval(timerCountDown.value);
-          //   启用获取验证码按钮，并改变文本
+          //   取消禁用获取验证码按钮，并改变文本
           securityCodeStatus.status = false;
-          securityCodeStatus.text = "获取验证码";
+          securityCodeStatus.text = "重新获取";
         } else {
-          time = time - 1;
-          securityCodeStatus.text = time;
+          //   securityCodeStatus.text = time;
+          securityCodeStatus.text = `${time}秒后重新获取`; // es5
         }
       }, 1000);
     };
