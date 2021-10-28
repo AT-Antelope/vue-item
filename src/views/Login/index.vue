@@ -19,7 +19,7 @@
         :model="ruleForm"
         status-icon
         :rules="rules"
-        ref="ruleForm"
+        ref="loginForm"
         class="login-form"
         size="medium"
       >
@@ -75,8 +75,12 @@
               ></el-input>
             </el-col>
             <el-col :span="8">
-              <el-button type="success" class="block" @click="getSms()"
-                >获取验证码</el-button
+              <el-button
+                type="success"
+                class="block securityCodeButton"
+                @click="getSms()"
+                :disabled="securityCodeStatus.status"
+                >{{ securityCodeStatus.text }}</el-button
               >
             </el-col>
           </el-row>
@@ -182,7 +186,7 @@ export default {
       }, 1000);
     };
 
-    /**
+    /*************************************************************
      * 声明数据
      * reactive，声明的数据是对象类型时
      */
@@ -203,6 +207,18 @@ export default {
 
     // 登录按钮禁用状态
     const loginButtonStatus = ref(true);
+
+    // 验证码按钮禁用状态
+    // const securityCodeStatus = ref(false);   // 已替换为securityCodeStatus对象
+
+    //   securityCodeStatus.value = true;
+    const securityCodeStatus = reactive({
+      status: false,
+      text: "获取验证码",
+    });
+
+    // 倒计时
+    const timerCountDown = ref(null);
 
     // 表单绑定数据
     const ruleForm = reactive({
@@ -228,8 +244,14 @@ export default {
       });
       // 再把当前的更改为true，高亮
       item.active = true;
+
       //    更新模块值为当前选项卡的model属性，用于选择其他选项框时改变确认密码输入框的显示状态
       model.value = item.modelFlag;
+
+      //重置表单
+      //   this.$refs[formName].resetFields();    // 2.0写法
+      //   refs["loginForm"].resetFields();   // 3.0
+      refs.loginForm.resetFields();
     };
 
     // 获取验证码
@@ -250,20 +272,35 @@ export default {
       // 请求的接口，获取验证码
       let request = {
         username: ruleForm.username,
-        module: "login",
+        // module: "login",
+        module: model.value,
       };
-      GetSms(request)
-        .then((response) => {
-          root.$message({
-            showClose: true,
-            duration: 30000,
-            message: response.data.message,
-            type: "success",
+
+      // 修改获取验证码按钮禁用状态
+      securityCodeStatus.status = true;
+      securityCodeStatus.text = "请求中";
+
+      // 模拟长时间请求
+      setTimeout(() => {
+        GetSms(request)
+          .then((response) => {
+            root.$message({
+              showClose: true,
+              duration: 30000,
+              message: response.data.message,
+              type: "success",
+            });
+
+            // 启用登录/注册按钮
+            loginButtonStatus.value = false;
+
+            // 倒计时定时器
+            countDown(10);
+          })
+          .catch((error) => {
+            console.log(error);
           });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      }, 2000);
     };
 
     // 表单数据提交
@@ -281,6 +318,25 @@ export default {
     };
 
     /**
+     * 倒计时
+     */
+    const countDown = (countDownTime) => {
+      let time = countDownTime;
+      timerCountDown.value = setInterval(() => {
+        if (time <= 1) {
+          // 清除定时器
+          clearInterval(timerCountDown.value);
+          //   启用获取验证码按钮，并改变文本
+          securityCodeStatus.status = false;
+          securityCodeStatus.text = "获取验证码";
+        } else {
+          time = time - 1;
+          securityCodeStatus.text = time;
+        }
+      }, 1000);
+    };
+
+    /**
      * 声明周期
      * 挂载完成后
      */
@@ -292,11 +348,14 @@ export default {
       menuTab,
       model,
       loginButtonStatus,
+      securityCodeStatus,
+      timerCountDown,
       ruleForm,
       rules,
       toggleMenu,
       submitForm,
       getSms,
+      countDown,
     };
   },
   data() {
@@ -348,6 +407,9 @@ export default {
   }
   .login-btn {
     margin-top: 19px;
+  }
+  .securityCodeButton {
+    color: #fff;
   }
 }
 </style>
