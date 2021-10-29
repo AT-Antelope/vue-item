@@ -107,7 +107,7 @@
   </div>
 </template>
 <script>
-import { GetSms, Register } from "@/api/login.js";
+import { GetSms, Login, Register } from "@/api/login.js";
 import { reactive, ref, isRef, toRef, onMounted } from "@vue/composition-api";
 // 在vue.config.js里配置了解析别名(alias)
 // 同样配置了自动添加后缀名后，可以省略后缀名
@@ -316,24 +316,13 @@ export default {
       //   等于refs.forName
       refs[formName].validate((valid) => {
         if (valid) {
-          // 声明参数数据
-          let requestData = {
-            username: ruleForm.username,
-            password: ruleForm.password,
-            code: ruleForm.securityCode,
-          };
-          // 创建请求
-          Register(requestData)
-            .then((response) => {
-              let data = response.data;
-              root.$message({
-                message: data.message,
-                type: "success",
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
+          // 表单验证通过
+          //   if (model == "login") {
+          //     loginData();
+          //   } else {
+          //     registerData();
+          //   }
+          model == "login" ? loginData() : registerData();
           alert("submit!");
         } else {
           root.$message({
@@ -347,9 +336,58 @@ export default {
     };
 
     /**
+     * 登录
+     */
+    const loginData = () => {
+      let requestData = {
+        username: ruleForm.username,
+        password: ruleForm.password,
+        code: ruleForm.securityCode,
+        module: "login",
+      };
+      Login(requestData)
+        .then((response) => {})
+        .catch((error) => {});
+    };
+
+    /**
+     * 注册
+     */
+    const registerData = () => {
+      // 声明参数数据
+      let requestData = {
+        username: ruleForm.username,
+        password: ruleForm.password,
+        code: ruleForm.securityCode,
+        module: "register",
+      };
+      // 创建请求
+      Register(requestData)
+        .then((response) => {
+          let data = response.data;
+          root.$message({
+            message: data.message,
+            type: "success",
+          });
+
+          // 注册成功后转到登录界面
+          toggleMenu(menuTab[0]);
+          //   清除倒计时
+          clearCountDown();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+    /**
      * 倒计时
      */
     const countDown = (countDownTime) => {
+      // 判断定时器是否存在，存在则删除，防止多次触发定时器
+      if (timerCountDown.value) {
+        clearCountDown();
+      }
+
       let time = countDownTime;
       timerCountDown.value = setInterval(() => {
         time--; // time = time--;
@@ -364,6 +402,18 @@ export default {
           securityCodeStatus.text = `${time}秒后重新获取`; // es5
         }
       }, 1000);
+    };
+
+    /**
+     * 清除倒计时
+     */
+    const clearCountDown = () => {
+      // 清除定时器
+      clearInterval(timerCountDown.value);
+
+      // 还原获取验证码按钮的默认状态
+      securityCodeStatus.status = false;
+      securityCodeStatus.text = "获取验证码";
     };
 
     /**
@@ -386,6 +436,8 @@ export default {
       submitForm,
       getSms,
       countDown,
+      loginData,
+      registerData,
     };
   },
   data() {
