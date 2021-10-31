@@ -15,6 +15,15 @@ const service = axios.create({
 service.interceptors.request.use(
   function (config) {
     // 在发送请求之前做些什么
+
+    // 业务需求
+
+    // 最终目的不是在请求头添加参数
+    // config.headers.Tokey = "333";
+    // config.headers["Tokey"] = "333";
+    // config.headers["userID"] = "444";
+    // config.headers["UID"] = "555";
+
     return config;
   },
   function (error) {
@@ -30,12 +39,11 @@ service.interceptors.response.use(
     // 对响应数据做点什么
     // alert(...response);
     let data = response.data;
-    let msg = data.message;
 
     //和后端说好，成功时返回0，有问题时返回非0
     if (data.resCode !== 0) {
       // console.log(response);
-      Message.error(msg);
+      Message.error(data.message);
       return Promise.reject(data);
     } else {
       return response;
