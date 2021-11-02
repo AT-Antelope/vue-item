@@ -1,0 +1,14 @@
+// 专门用于修改element-ui样式的文件，如果style标签加了scoped的情况下，可能会出现权限不足的情况，加!important获得最高级别可解决
+.el-menu-item {
+  font-size: 15px;
+  padding-left: 62px !important;
+  &.is-active {
+    background-color: rgba(245, 108, 108, 0.2) !important;
+  }
+}
+
+li.el-submenu {
+  &.is-active.is-opened .el-submenu__title {
+    background-color: $mainColor !important;
+  }
+}

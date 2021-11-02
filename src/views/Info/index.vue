@@ -1,11 +1,11 @@
 <template>
   <div>
-    <h1>this is Console page</h1>
+    <h1>信息列表</h1>
   </div>
 </template>
 <script>
 export default {
-  name: "console",
+  name: "infoIndex",
   setup(props, { root }) {},
 };
 </script>
