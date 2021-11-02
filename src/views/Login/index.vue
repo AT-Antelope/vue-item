@@ -101,6 +101,11 @@
             >{{ model === "login" ? "登录" : "注册" }}</el-button
           >
         </el-form-item>
+        <el-form-item>
+          <el-button type="info" @click="submitFormSkip()" class="block login-btn"
+            >登录(免验证)</el-button
+          >
+        </el-form-item>
       </el-form>
       <!-- 表单 end -->
     </div>
@@ -445,6 +450,16 @@ export default {
     };
 
     /**
+     * 登录按钮_跳过验证
+     */
+    const submitFormSkip = () => {
+      // 页面跳转
+      root.$router.push({
+        name: "Console",
+      });
+    };
+
+    /**
      * 声明周期
      * 挂载完成后
      */
@@ -468,6 +483,7 @@ export default {
       countDown,
       loginData,
       registerData,
+      submitFormSkip,
     };
   },
   data() {
