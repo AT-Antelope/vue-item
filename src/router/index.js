@@ -3,6 +3,10 @@ import VueRouter from "vue-router";
 
 Vue.use(VueRouter);
 
+// 引入组件
+// 引入index时可省略，默认为index
+import Layout from "@/views/Layout/index.vue";
+
 const routes = [
   {
     path: "/",
@@ -27,8 +31,9 @@ const routes = [
     redirect: "index",
     meta: {
       name: "控制台",
+      icon: "console",
     },
-    component: () => import("../views/Layout/index"),
+    component: Layout,
     children: [
       {
         path: "/index",
@@ -49,8 +54,9 @@ const routes = [
     name: "Info",
     meta: {
       name: "信息管理",
+      icon: "menu",
     },
-    component: () => import("../views/Layout/index"),
+    component: Layout,
     children: [
       {
         path: "/infoIndex",
@@ -79,8 +85,9 @@ const routes = [
     name: "User",
     meta: {
       name: "用户管理",
+      icon: "user",
     },
-    component: () => import("../views/Layout/index"),
+    component: Layout,
     children: [
       {
         path: "/userIndex",

@@ -8,13 +8,15 @@
         :collapse="isCollapse"
         text-color="#fff"
         active-text-color="#fff"
-        router="true"
+        :router="isCollapse"
       >
         <template v-for="(item, index) in routers">
-          <el-submenu v-if="!item.hidden" :key="item.id" :index="index">
+          <!-- 数值 + 空字符串，可以实现转换为string类型 -->
+          <el-submenu v-if="!item.hidden" :key="item.id" :index="index + ''">
             <!-- 一级菜单 -->
             <template slot="title">
-              <i class="el-icon-location"></i>
+              <!-- 自定义全局组件 -->
+              <svg-icon :iconClass="item.meta.icon" :className="item.meta.icon" />
               <span>{{ item.meta.name }}</span>
             </template>
             <!-- 子级菜单 -->
@@ -42,7 +44,7 @@ export default {
 
     // 从router里获取数据
     const routers = root.$router.options.routes;
-    console.log(routers);
+    // console.log(routers);
 
     return {
       isCollapse,
@@ -59,5 +61,9 @@ export default {
   width: $navMenuWidth;
   height: 100vh;
   background-color: #344a5f;
+}
+svg {
+  font-size: 20px;
+  margin-right: 12px;
 }
 </style>
