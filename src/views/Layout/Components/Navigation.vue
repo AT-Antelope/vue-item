@@ -38,16 +38,23 @@
   </div>
 </template>
 <script>
-import { ref } from "@vue/composition-api";
+import { computed, ref } from "@vue/composition-api";
 export default {
   name: "navMenu",
   setup(props, { root }) {
-    //   菜单是否为折叠状态，默认为false(展开)
-    const isCollapse = ref(false);
-
+    /**
+     * data数据
+     */
     // 从router里获取数据
     const routers = root.$router.options.routes;
-    // console.log(routers);
+
+    /**
+     * computed监听
+     */
+    //   菜单是否为折叠状态，默认为false(展开)
+    const isCollapse = computed(() => {
+      return root.$store.state.isCollapse;
+    });
 
     return {
       isCollapse,
@@ -70,12 +77,24 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  width: $navMenuWidth;
+  //   width: $navMenuWidth;
   height: 100vh;
   background-color: #344a5f;
+  //   调用config.scss中的兼容mixin
+  @include webkit(transition, all 0.5s ease 0s);
+  svg {
+    font-size: 20px;
+    margin-right: 12px;
+  }
 }
-svg {
-  font-size: 20px;
-  margin-right: 12px;
+.close {
+  #nav-wrap {
+    width: $navMenuWidthOnClosed;
+  }
+}
+.open {
+  #nav-wrap {
+    width: $navMenuWidth;
+  }
 }
 </style>

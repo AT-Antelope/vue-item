@@ -41,8 +41,19 @@ export default {};
   width: 100%;
   height: 100%;
   padding-top: $layoutHeaderHeight;
-  padding-left: $navMenuWidth;
-  box-sizing: border-box;
+  //   padding-left: $navMenuWidth;
+  @include webkit(box-sizing, border-box);
+  @include webkit(transition, all 0.3s ease 0s);
+}
+.close {
+  .main-content {
+    padding-left: $navMenuWidthOnClosed;
+  }
+}
+.open {
+  .main-content {
+    padding-left: $navMenuWidth;
+  }
 }
 .content {
   width: 100%;
@@ -51,6 +62,6 @@ export default {};
   padding-left: 30px;
   border: 30px solid #e9e9e9;
   border-bottom: none;
-  box-sizing: border-box;
+  @include webkit(box-sizing, border-box);
 }
 </style>

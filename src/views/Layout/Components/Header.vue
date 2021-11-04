@@ -1,6 +1,6 @@
 <template>
   <div id="header-wrap">
-    <div class="float-left header-icon">
+    <div class="float-left header-icon" @click="navMenuState">
       <svg-icon iconID="menuHeader" className="menuHeader" />
     </div>
     <div class="float-right">
@@ -16,6 +16,15 @@
 import SvgIcon from "../../../icons/SvgIcon.vue";
 export default {
   components: { SvgIcon },
+  setup(props, { root }) {
+    const navMenuState = () => {
+      root.$store.commit("SET_COLLAPSE");
+    };
+
+    return {
+      navMenuState,
+    };
+  },
 };
 </script>
 
@@ -24,13 +33,24 @@ export default {
 #header-wrap {
   position: fixed;
   top: 0;
-  left: $navMenuWidth;
+  //   left: $navMenuWidth;
   right: 0;
   height: 75px;
   background-color: #fff;
-  box-shadow: 0 3px 16px 0 rgba($color: #000000, $alpha: 0.1);
   z-index: 1;
   line-height: 75px;
+  @include webkit(box-shadow, 0 3px 16px 0 rgba($color: #000000, $alpha: 0.1));
+  @include webkit(transition, all 0.5s ease 0s);
+}
+.close {
+  #header-wrap {
+    left: $navMenuWidthOnClosed;
+  }
+}
+.open {
+  #header-wrap {
+    left: $navMenuWidth;
+  }
 }
 .header-icon {
   padding: 0 28px;

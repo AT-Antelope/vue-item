@@ -1,7 +1,21 @@
 //后台框架尺寸
 // 主颜色
 $mainColor: #f56c6c;
+
 // 导航栏菜单宽度
 $navMenuWidth: 200px;
+
+//左侧导航栏收起后的宽度
+$navMenuWidthOnClosed: 65px;
+
 // 顶部头高度
 $layoutHeaderHeight: 75px;
+
+// 兼容
+@mixin webkit($type, $value) {
+  -webkit-#{$type}: $value;
+  -moz-#{$type}: $value;
+  -o-#{$type}: $value;
+  -ms-#{$type}: $value;
+  #{$type}: $value;
+}
