@@ -9,7 +9,7 @@ export default {
   name: "svgIcon",
   //   props: ["iconClass", "iconName"],
   props: {
-    iconClass: {
+    iconID: {
       type: String,
       default: "",
       //   required: true, // 是否为必填项
@@ -29,7 +29,7 @@ export default {
     /**
      * 计算属性，得出最终结果并返回，computed(()=>{get:() => {}, set:() => {})
      */
-    const iconName = computed(() => `#icon-${props.iconClass}`);
+    const iconName = computed(() => `#icon-${props.iconID}`);
 
     const svgClass = computed(() => {
       if (props.className) {

@@ -1,6 +1,9 @@
 <template>
   <div>
     <div id="nav-wrap">
+      <h1 class="logoIcon">
+        <img src="../../../assets/logo.png" alt="" />
+      </h1>
       <el-menu
         default-active="2"
         class="el-menu-vertical-demo"
@@ -16,7 +19,7 @@
             <!-- 一级菜单 -->
             <template slot="title">
               <!-- 自定义全局组件 -->
-              <svg-icon :iconClass="item.meta.icon" :className="item.meta.icon" />
+              <svg-icon :iconID="item.meta.icon" :className="item.meta.icon" />
               <span>{{ item.meta.name }}</span>
             </template>
             <!-- 子级菜单 -->
@@ -54,6 +57,15 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.logoIcon {
+  // img为block元素使用 margin:auto 实现居中，这里使用h1包裹
+  margin: 0;
+  text-align: center;
+  img {
+    margin: 31px auto 22px;
+    width: 70px;
+  }
+}
 #nav-wrap {
   position: fixed;
   top: 0;
