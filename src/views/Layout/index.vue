@@ -19,7 +19,7 @@ export default {
      * computed
      */
     const menuStatus = computed(() => {
-      return root.$store.state.isCollapse;
+      return root.$store.state.app.isCollapse;
     });
 
     return {

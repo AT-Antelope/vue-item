@@ -369,13 +369,26 @@ export default {
         code: ruleForm.securityCode,
         module: "login",
       };
-      Login(requestData)
+      root.$store
+        .dispatch("login", requestData)
         .then((response) => {
           console.log("登录成功");
+          //   路由页面跳转
+          root.$router.push({
+            name: "Console",
+          });
         })
         .catch((error) => {
           console.log("出错了");
         });
+      //   使用vuex实现异步操作
+      //   Login(requestData)
+      //     .then((response) => {
+      //       console.log("登录成功");
+      //     })
+      //     .catch((error) => {
+      //       console.log("出错了");
+      //     });
     };
 
     /**

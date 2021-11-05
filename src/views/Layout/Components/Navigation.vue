@@ -53,7 +53,7 @@ export default {
      */
     //   菜单是否为折叠状态，默认为false(展开)
     const isCollapse = computed(() => {
-      return root.$store.state.isCollapse;
+      return root.$store.state.app.isCollapse;
     });
 
     return {
