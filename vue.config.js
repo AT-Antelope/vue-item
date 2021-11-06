@@ -73,7 +73,8 @@ module.exports = {
     proxy: {
       "/devApi": {
         // 此处的写法，目的是为了 将 /api 替换成 https://www.baidu.com/
-        target: "http://old.web-jshtml.cn/vue_admin_api",
+        target: "http://old.web-jshtml.cn/vue_admin_api/token",
+        // target: "http://www.web-jshtml.cn/productapi/token",
         // 允许跨域
         changeOrigin: true,
         ws: true,

@@ -370,7 +370,7 @@ export default {
         module: "login",
       };
       root.$store
-        .dispatch("login", requestData)
+        .dispatch("app/login", requestData)
         .then((response) => {
           console.log("登录成功");
           //   路由页面跳转
@@ -466,6 +466,7 @@ export default {
      * 登录按钮_跳过验证
      */
     const submitFormSkip = () => {
+      root.$store.dispatch("app/loginWithoutValidate");
       // 页面跳转
       root.$router.push({
         name: "Console",

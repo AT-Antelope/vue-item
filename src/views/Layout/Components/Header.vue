@@ -4,7 +4,9 @@
       <svg-icon iconID="menuHeader" className="menuHeader" />
     </div>
     <div class="float-right">
-      <div class="user-info float-left">管理员</div>
+      <div class="user-info float-left">
+        <<img src="@/assets/profile.png" alt="" /> {{ username }}
+      </div>
       <div class="header-icon float-left">
         <svg-icon iconID="logout" className="logout" />
       </div>
@@ -17,11 +19,22 @@ import SvgIcon from "../../../icons/SvgIcon.vue";
 export default {
   components: { SvgIcon },
   setup(props, { root }) {
+    /**
+     * computed
+     */
+    const username = computed(() => {
+      root.$store.state.app.username;
+    });
+
+    /**
+     * actions
+     */
     const navMenuState = () => {
       root.$store.commit("app/SET_COLLAPSE");
     };
 
     return {
+      username,
       navMenuState,
     };
   },
