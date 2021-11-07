@@ -5,9 +5,10 @@
     </div>
     <div class="float-right">
       <div class="user-info float-left">
-        <<img src="@/assets/profile.png" alt="" /> {{ username }}
+        <img src="@/assets/profile.png" alt="profile" />
+        <h1 class="float-right">{{ $store.state.app.username }}</h1>
       </div>
-      <div class="header-icon float-left">
+      <div class="header-icon float-left" @click="logout">
         <svg-icon iconID="logout" className="logout" />
       </div>
     </div>
@@ -16,9 +17,14 @@
 
 <script>
 import SvgIcon from "../../../icons/SvgIcon.vue";
+import { ref, computed } from "@vue/composition-api";
 export default {
   components: { SvgIcon },
   setup(props, { root }) {
+    /**
+     * data
+     */
+
     /**
      * computed
      */
@@ -33,9 +39,25 @@ export default {
       root.$store.commit("app/SET_COLLAPSE");
     };
 
+    // 退出
+    const logout = () => {
+      root.$store
+        .dispatch("app/removeToken")
+        .then((response) => {
+          root.$router.push({
+            name: "Login",
+          });
+        })
+        .catch((error) => {
+          root.$message.error("退出失败");
+          console.log(error);
+        });
+    };
+
     return {
       username,
       navMenuState,
+      logout,
     };
   },
 };
@@ -81,6 +103,15 @@ export default {
   // + 表示 next(下一个)
   + .header-icon {
     padding: 0 28px;
+  }
+  img {
+    width: 36px;
+    height: 36px;
+    margin: 20px 0;
+  }
+  h1 {
+    font-size: 14px;
+    margin: 0 22px 0 18px;
   }
 }
 </style>

@@ -1,5 +1,11 @@
 import { Login } from "@/api/login";
-import { setToken, setUserName, getUserName } from "@/utils/app";
+import {
+  setToken,
+  setUserName,
+  removeToken,
+  getUserName,
+  removeUserName,
+} from "@/utils/app";
 
 const state = {
   // isCollapse: false,
@@ -30,10 +36,12 @@ const mutations = {
   SET_USERNAME(state, value) {
     state.username = value;
   },
-  SET_TOKEN_TEST(state, value) {
-    state._token = "123qwe123";
+
+  //   test button
+  SET_TOKEN_TEST(state) {
+    state._token = "testToken";
   },
-  SET_USERNAME_TEST(state, value) {
+  SET_USERNAME_TEST(state) {
     state.username = "test@gmail.com";
   },
 };
@@ -68,9 +76,23 @@ const actions = {
     });
   },
 
+  // 移除token和username (回到登录页面时)
+  removeToken({ commit }) {
+    return new Promise((resolve, reject) => {
+      removeToken();
+      removeUserName();
+      commit("SET_TOKEN", "");
+      commit("SET_USERNAME", "");
+      resolve();
+    });
+  },
+
+  // test button
   loginWithoutValidate({ commit }) {
     commit("SET_TOKEN_TEST");
     commit("SET_USERNAME_TEST");
+    setToken("testToken");
+    setUserName("test@gmail.com");
   },
 };
 

@@ -463,7 +463,7 @@ export default {
     };
 
     /**
-     * 登录按钮_跳过验证
+     * 登录按钮_跳过验证(test button)
      */
     const submitFormSkip = () => {
       root.$store.dispatch("app/loginWithoutValidate");

@@ -9,17 +9,21 @@ export function getToken() {
 }
 
 export function setToken(token) {
-  return cookie.set(adminToken, token);
+  return cookie.set(adminToken, token, 1);
 }
 
 export function removeToken(token) {
   return cookie.remove(adminToken);
 }
 
-export function setUserName(value) {
-  return cookie.set(adminUsername, value);
-}
-
 export function getUserName() {
   return cookie.get(adminUsername);
+}
+
+export function setUserName(value) {
+  return cookie.set(adminUsername, value, 1);
+}
+
+export function removeUserName() {
+  return cookie.remove(adminUsername);
 }
