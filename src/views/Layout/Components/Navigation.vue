@@ -11,7 +11,7 @@
         :collapse="isCollapse"
         text-color="#fff"
         active-text-color="#fff"
-        :router="isCollapse"
+        router
       >
         <template v-for="(item, index) in routers">
           <!-- 数值 + 空字符串，可以实现转换为string类型 -->
@@ -47,6 +47,7 @@ export default {
      */
     // 从router里获取数据
     const routers = root.$router.options.routes;
+    console.log(routers);
 
     /**
      * computed监听
@@ -55,6 +56,10 @@ export default {
     const isCollapse = computed(() => {
       return root.$store.state.app.isCollapse;
     });
+
+    /**
+     * action
+     */
 
     return {
       isCollapse,
