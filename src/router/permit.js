@@ -21,10 +21,10 @@ router.beforeEach((to, from, next) => {
     if (to.path === "/login") {
       store.dispatch("app/removeToken");
       next();
-      console.log("有token,回到了login");
+      //   console.log("有token,回到了login");
     } else {
       next();
-      console.log("有token，进入非login");
+      //   console.log("有token，进入非login");
     }
   } else {
     //   token不存在时
@@ -32,11 +32,11 @@ router.beforeEach((to, from, next) => {
     if (whiteList.indexOf(to.path) !== -1) {
       // 如果是白名单的页面则直接进入
       next(); // 不带参数返回to的值，不带参数的next()不会重复触发beforeEach()
-      console.log("没有token,但此页面是白名单");
+      //   console.log("没有token,但此页面是白名单");
     } else {
       // 没有token且不在白名单内返回到登录页面
       next("/login");
-      console.log("不是白名单，回到登录页");
+      //   console.log("不是白名单，回到登录页");
     }
   }
 

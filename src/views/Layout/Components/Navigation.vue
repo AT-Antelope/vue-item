@@ -47,7 +47,7 @@ export default {
      */
     // 从router里获取数据
     const routers = root.$router.options.routes;
-    console.log(routers);
+    // console.log(routers);
 
     /**
      * computed监听

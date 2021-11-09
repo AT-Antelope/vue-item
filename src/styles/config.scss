@@ -11,11 +11,24 @@ $navMenuWidthOnClosed: 65px;
 // 顶部头高度
 $layoutHeaderHeight: 75px;
 
-// 兼容
+// 浏览器内核兼容
 @mixin webkit($type, $value) {
   -webkit-#{$type}: $value;
   -moz-#{$type}: $value;
   -o-#{$type}: $value;
   -ms-#{$type}: $value;
   #{$type}: $value;
+}
+
+// Info/index页面，工具栏的样式
+@mixin labelDom($text-align, $width, $line-height: "normal") {
+  label {
+    float: left;
+    width: $width + px;
+    text-align: $text-align;
+    line-height: $line-height + px;
+  }
+  .wrap-content {
+    margin-left: $width + px;
+  }
 }
