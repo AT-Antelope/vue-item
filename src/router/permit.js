@@ -15,7 +15,7 @@ router.beforeEach((to, from, next) => {
   if (getToken()) {
     // token已存在时
     //   路由动态添加，分配菜单，每个角色分配不同菜单
-    console.log("有token");
+    // console.log("有token");
 
     // 安全性，当用户回到登录界面时，清除token，只能重新登录
     if (to.path === "/login") {

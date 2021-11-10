@@ -14,7 +14,7 @@ li.el-submenu {
   }
 }
 
-// 导航栏关闭时选中的颜色
+/* 导航栏关闭时选中的颜色 */
 .close {
   .el-submenu {
     &.is-opened {
@@ -25,7 +25,7 @@ li.el-submenu {
   }
 }
 
-// 导航栏关闭时选中二级菜单的颜色
+/* 航栏关闭时选中二级菜单的颜色 */
 .el-menu--vertical {
   .el-menu {
     background-color: $mainColor !important;
@@ -33,8 +33,24 @@ li.el-submenu {
   .el-menu-item {
     line-height: 56px;
   }
-  //   导航栏二级菜单hover时颜色
+  /* 导航栏二级菜单hover时颜色 */
   .el-menu-item:hover {
     background-color: orange !important;
   }
+}
+
+/* 整个table表格 */
+.el-table .el-table__cell {
+  text-align: center;
+}
+
+/* Info/index，table表格的表头 */
+.el-table__header-wrapper {
+  text-align: center;
+  font-weight: bold;
+}
+
+/* table表格内部 */
+.el-table__body-wrapper {
+  font-size: 14px;
 }
