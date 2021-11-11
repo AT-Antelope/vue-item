@@ -6,9 +6,9 @@
         <div class="label-wrap category">
           <label for="">类型: </label>
           <div class="wrap-content">
-            <el-select v-model="typeSelectKey" placeholder="请选择">
+            <el-select v-model="category_value" placeholder="请选择">
               <el-option
-                v-for="item in formTypeOptions"
+                v-for="item in formType_options"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
@@ -19,13 +19,13 @@
         </div>
       </el-col>
 
-      <!-- 选择时间 -->
+      <!-- 选择日期 -->
       <el-col :span="7">
         <div class="label-wrap date">
           <label for="">日期: &nbsp;&nbsp;</label>
           <div class="wrap-content">
             <el-date-picker
-              v-model="datePickerTime"
+              v-model="datePicker_value"
               type="datetimerange"
               align="right"
               start-placeholder="开始日期"
@@ -44,9 +44,9 @@
         <div class="label-wrap keyword">
           <label for="">关键字: &nbsp;&nbsp;</label>
           <div class="wrap-content">
-            <el-select v-model="searchKey" placeholder="请选择" style="width: 100%">
+            <el-select v-model="search_key" placeholder="请选择" style="width: 100%">
               <el-option
-                v-for="item in searchOption"
+                v-for="item in search_option"
                 :key="item.value"
                 :value="item.value"
                 :label="item.label"
@@ -58,7 +58,7 @@
       </el-col>
       <el-col :span="3">
         <el-input
-          v-model="searchKey_input"
+          v-model="search_keyInput"
           placeholder="请输入内容"
           style="width: 100%"
         ></el-input>
@@ -69,7 +69,9 @@
       <!-- 必须为有个值才能撑大，为空时无效 -->
       <el-col :span="2">&nbsp;</el-col>
       <el-col :span="2">
-        <el-button type="danger" style="width: 100%">新增</el-button>
+        <el-button type="danger" style="width: 100%" @click="dialog_info_add_flag = true"
+          >新增</el-button
+        >
       </el-col>
     </el-row>
 
@@ -77,7 +79,7 @@
     <div class="black-space-30"></div>
 
     <!-- 表格数据 -->
-    <el-table :data="formTable" border style="width: 100%">
+    <el-table :data="form_table" border style="width: 100%">
       <el-table-column type="selection" width="55"> </el-table-column>
       <el-table-column prop="title" label="标题" width="830px"> </el-table-column>
       <el-table-column prop="category" label="类别" width="130px"> </el-table-column>
@@ -85,8 +87,10 @@
       <el-table-column prop="user" label="管理人" width="115px"> </el-table-column>
       <el-table-column label="操作">
         <template>
-          <el-button type="error" size="mini">删除</el-button>
-          <el-button type="success" size="mini">编辑</el-button>
+          <el-button type="danger" size="mini">删除</el-button>
+          <el-button type="success" size="mini" @click="dialog_info_add_flag = true"
+            >编辑</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
@@ -103,9 +107,8 @@
         <el-pagination
           class="float-right"
           background
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page="currentPage4"
+          @size-change="handleSize_change"
+          @current-change="handle_current_change"
           :page-sizes="[100, 200, 300, 400]"
           :page-size="100"
           layout="total, sizes, prev, pager, next, jumper"
@@ -114,21 +117,35 @@
         </el-pagination>
       </el-col>
     </el-row>
+
+    <!-- 新增弹窗 -->
+    <!-- <DialogInfo :openFlag.sync="dialog_info_add_flag" @closeFlag="dialogClose" /> -->
+    <DialogInfo :openFlag.sync="dialog_info_add_flag" />
   </div>
 </template>
 <script>
+import DialogInfo from "./dialog/info";
 import { ref, reactive } from "@vue/composition-api";
 export default {
   name: "infoIndex",
+  components: { DialogInfo },
   setup(props, { root }) {
     /**
      * data
      */
+    // 新增按钮，父传子
+    const dialog_info_add_flag = ref(false);
     // 表单类别选项框_默认值
-    const typeSelectKey = ref(1);
+    const category_value = ref(1);
+    // 选择日期
+    const datePicker_value = ref("");
+    // 关键字选项框_默认值
+    const search_key = ref("id");
+    // 关键字搜索框
+    const search_keyInput = ref("");
 
     // 表单类别
-    const formTypeOptions = reactive([
+    const formType_options = reactive([
       {
         value: 1,
         label: "国际信息",
@@ -142,15 +159,8 @@ export default {
         label: "行业信息",
       },
     ]);
-
-    // 选择时间
-    const datePickerTime = ref("");
-
-    // 关键字选项框_默认值
-    const searchKey = ref("id");
-
     // 关键字选项框
-    const searchOption = reactive([
+    const search_option = reactive([
       {
         value: "id",
         label: "ID",
@@ -160,12 +170,8 @@ export default {
         label: "标题",
       },
     ]);
-
-    // 关键字搜索框
-    const searchKey_input = ref("");
-
     // 表格数据
-    const formTable = reactive([
+    const form_table = reactive([
       {
         title: "纽约市长白思豪宣布退出总统竞选，，特朗普发推回应",
         category: "国内信息",
@@ -193,25 +199,38 @@ export default {
       },
     ]);
 
+    /**
+     * function
+     */
     // 底部分页
-    const handleSizeChange = (val) => {
+    const handleSize_change = (val) => {
       console.log(`每页 ${val} 条`);
     };
-
-    const handleCurrentChange = (val) => {
+    const handle_current_change = (val) => {
       console.log(`当前页: ${val}`);
     };
+    // 简单方法，使用.sync修饰器后，可以实现父子组件同步，直接向父组件修改值
+    // 回调时需要做逻辑处理时，不能用修饰器
+    // const dialogClose = () => {
+    //   // 只进行父传子时，只改变了子组件的值为false，父组件还是true，需要子组件用回调的方式$emit()返回给父组件值后，父组件接收，实现修改父组件的值
+    //   dialog_info_add_flag.value = false;
+    // };
 
     return {
-      typeSelectKey,
-      formTypeOptions,
-      datePickerTime,
-      searchKey,
-      searchOption,
-      searchKey_input,
-      formTable,
-      handleSizeChange,
-      handleCurrentChange,
+      /* ref */
+      dialog_info_add_flag,
+      category_value,
+      datePicker_value,
+      search_key,
+      search_keyInput,
+      /* reactive */
+      formType_options,
+      search_option,
+      form_table,
+      /* function */
+      handleSize_change,
+      handle_current_change,
+      //   dialogClose,
     };
   },
 };
