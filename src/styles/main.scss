@@ -1,2 +1,15 @@
-@import "./normalize.scss";
+@import "./config.scss";
 // @import "normalize.css/normalize.css";
+@import "./normalize.scss";
+@import "./elementui.scss";
+
+.float-left {
+  float: left;
+}
+.float-right {
+  float: right;
+}
+
+.black-space-30 {
+  height: 30px;
+}

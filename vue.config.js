@@ -9,12 +9,24 @@ module.exports = {
   /**
    * webpack配置,see https://github.com/vuejs/vue-cli/blob/dev/docs/webpack.md
    **/
-  chainWebpack: (config) => {},
+  //   svg的配置
+  chainWebpack: (config) => {
+    const svgRule = config.module.rule("svg");
+    svgRule.uses.clear();
+    svgRule
+      .use("svg-sprite-loader")
+      .loader("svg-sprite-loader")
+      .options({
+        symbolId: "icon-[name]",
+        include: ["./src/icons"],
+      });
+  },
   configureWebpack: (config) => {
     config.resolve = {
       // 配置解析别名
       extensions: [".js", ".json", ".vue"],
       alias: {
+        vue: "vue/dist/vue.js", // 从runtime模式改为compiler模式，相当于3.0和2.0的区别
         "@": path.resolve(__dirname, "./src"),
         public: path.resolve(__dirname, "./public"),
         components: path.resolve(__dirname, "./src/components"),
@@ -61,7 +73,8 @@ module.exports = {
     proxy: {
       "/devApi": {
         // 此处的写法，目的是为了 将 /api 替换成 https://www.baidu.com/
-        target: "http://old.web-jshtml.cn/vue_admin_api",
+        target: "http://old.web-jshtml.cn/vue_admin_api/token",
+        // target: "http://www.web-jshtml.cn/productapi/token",
         // 允许跨域
         changeOrigin: true,
         ws: true,

@@ -1,0 +1,76 @@
+// 专门用于修改element-ui样式的文件，如果style标签加了scoped的情况下，可能会出现权限不足的情况，加!important获得最高级别可解决
+
+.el-menu-item {
+  font-size: 15px;
+  padding-left: 62px !important;
+  &.is-active {
+    background-color: rgba(245, 108, 108, 0.2) !important;
+  }
+}
+
+li.el-submenu {
+  &.is-active.is-opened .el-submenu__title {
+    background-color: $mainColor !important;
+  }
+}
+
+/* 导航栏关闭时选中的颜色 */
+.close {
+  .el-submenu {
+    &.is-opened {
+      > .el-submenu__title {
+        background-color: $mainColor !important;
+      }
+    }
+  }
+}
+
+/* 航栏关闭时选中二级菜单的颜色 */
+.el-menu--vertical {
+  .el-menu {
+    background-color: $mainColor !important;
+  }
+  .el-menu-item {
+    line-height: 56px;
+  }
+  /* 导航栏二级菜单hover时颜色 */
+  .el-menu-item:hover {
+    background-color: orange !important;
+  }
+}
+
+/* 整个table表格 */
+.el-table .el-table__cell {
+  text-align: center;
+}
+
+/* Info/index，table表格的表头 */
+.el-table__header-wrapper {
+  text-align: center;
+  font-weight: bold;
+}
+
+/* table表格内部 */
+.el-table__body-wrapper {
+  font-size: 14px;
+}
+
+/* dialog，新增会话框 */
+.el-dialog__body {
+  padding: 30px 47px !important;
+}
+.el-dialog__footer {
+  text-align: center;
+  padding-bottom: 49px !important;
+  .el-button {
+    width: 150px;
+    margin: 0 11px;
+  }
+}
+
+/* form样式 */
+.el-form {
+  .el-form-item:last-child {
+    margin-bottom: 0 !important;
+  }
+}
