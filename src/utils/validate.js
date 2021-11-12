@@ -1,3 +1,7 @@
+/**
+ * 需时引用
+ */
+
 // 过滤特殊字符
 export function stripscript(string) {
   let pattern = new RegExp(

@@ -87,7 +87,7 @@
       <el-table-column prop="user" label="管理人" width="115px"> </el-table-column>
       <el-table-column label="操作">
         <template>
-          <el-button type="danger" size="mini">删除</el-button>
+          <el-button type="danger" size="mini" @click="deleteItem">删除</el-button>
           <el-button type="success" size="mini" @click="dialog_info_add_flag = true"
             >编辑</el-button
           >
@@ -101,7 +101,7 @@
     <!-- 底部分页 -->
     <el-row>
       <el-col :span="12">
-        <el-button size="small">批量删除</el-button>
+        <el-button size="small" @click="deleteSelected">批量删除</el-button>
       </el-col>
       <el-col :span="12">
         <el-pagination
@@ -126,10 +126,13 @@
 <script>
 import DialogInfo from "./dialog/info";
 import { ref, reactive } from "@vue/composition-api";
+import { global } from "@/utils/global.js";
 export default {
   name: "infoIndex",
   components: { DialogInfo },
   setup(props, { root }) {
+    //   自定义全局方法，调用后声明
+    const { deleteTableItem } = global();
     /**
      * data
      */
@@ -215,6 +218,35 @@ export default {
     //   // 只进行父传子时，只改变了子组件的值为false，父组件还是true，需要子组件用回调的方式$emit()返回给父组件值后，父组件接收，实现修改父组件的值
     //   dialog_info_add_flag.value = false;
     // };
+    // 删除操作
+    const deleteItem = () => {
+      // Vue2.0的方法
+      //   root.deleteItem({
+      //     msg: "是否删除此信息?",
+      //     title: "提示",
+      //     fn: "",
+      //   });
+
+      //   Vue3.0,(xxxy.value)可以做到监听(watch)到其他组件的值，不在必须在同一组件内调用方法
+      deleteTableItem({
+        msg: "是否删除此信息?",
+        title: "提示",
+        fn: "",
+      });
+    };
+    // 删除操作执行方法
+    const deleteItemFn = () => {};
+    // 批量删除
+    const deleteSelected = () => {
+      // 自定义全局方法
+      deleteTableItem({
+        msg: "是否删除所有已选中的信息?",
+        title: "提示",
+        fn: "",
+      });
+    };
+    // 批量删除执行方法
+    const deleteSelectedFn = () => {};
 
     return {
       /* ref */
@@ -231,6 +263,9 @@ export default {
       handleSize_change,
       handle_current_change,
       //   dialogClose,
+      deleteItem,
+      deleteSelected,
+      deleteSelectedFn,
     };
   },
 };
