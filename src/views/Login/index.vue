@@ -342,24 +342,24 @@ export default {
       //   等于refs.forName
       model.value == "login" ? loginData() : registerData();
       //   !!!-未知，valid登录获取都是false，注册时又可以通过
-      refs[formName].validate((valid) => {
-        if (valid) {
-          // 表单验证通过
-          //   if (model == "login") {
-          //     loginData();
-          //   } else {
-          //     registerData();
-          //   }
-          alert("submit!");
-        } else {
-          root.$message({
-            message: "提交失败",
-            type: "error",
-          });
-          console.log("error submit(submitForm)!!");
-          return false;
-        }
-      });
+      //   refs[formName].validate((valid) => {
+      //     if (valid) {
+      //       // 表单验证通过
+      //       //   if (model == "login") {
+      //       //     loginData();
+      //       //   } else {
+      //       //     registerData();
+      //       //   }
+      //       alert("submit!");
+      //     } else {
+      //       root.$message({
+      //         message: "提交失败",
+      //         type: "error",
+      //       });
+      //       console.log("error submit(submitForm)!!");
+      //       return false;
+      //     }
+      //   });
     };
 
     /**
