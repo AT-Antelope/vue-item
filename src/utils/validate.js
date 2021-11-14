@@ -34,7 +34,7 @@ export function validatePwd(string) {
 
 // 验证验证码
 export function validateCode(string) {
-  let reg = /^[0-9]{6}$/;
+  let reg = /^[0-9a-zA-Z]{6}$/;
   return reg.test(string) ? true : false;
 }
 

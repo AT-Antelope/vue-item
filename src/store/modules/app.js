@@ -57,7 +57,7 @@ const actions = {
       // 接口
       Login(requestData)
         .then((response) => {
-          let data = requestData.data.data;
+          let data = response.data.data;
           //  普通版
           //   content.commit("SET_TOKEN", data.token);
           //   content.commit("SET_USERNAME", data.username);
@@ -71,7 +71,7 @@ const actions = {
           resolve(response); // 执行 调用这个方法的地方 的.then
         })
         .catch((error) => {
-          reject();
+          reject(error);
         });
     });
   },

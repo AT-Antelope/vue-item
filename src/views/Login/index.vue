@@ -101,6 +101,8 @@
             >{{ model === "login" ? "登录" : "注册" }}</el-button
           >
         </el-form-item>
+
+        <!-- test-button -->
         <el-form-item>
           <el-button type="info" @click="submitFormSkip()" class="block login-btn"
             >登录(免验证)</el-button
@@ -339,6 +341,7 @@ export default {
       // context.refs[formName]，在setup()里传入{refs}，即解构，省略写法
       //   等于refs.forName
       refs[formName].validate((valid) => {
+        // console.log(refs[formName]);
         if (valid) {
           // 表单验证通过
           //   if (model == "login") {
@@ -346,14 +349,14 @@ export default {
           //   } else {
           //     registerData();
           //   }
-          model == "login" ? loginData() : registerData();
+          model.value == "login" ? loginData() : registerData();
           alert("submit!");
         } else {
           root.$message({
             message: "提交失败",
             type: "error",
           });
-          console.log("error submit!!");
+          console.log("error submit(submitForm)!!");
           return false;
         }
       });
@@ -372,7 +375,6 @@ export default {
       root.$store
         .dispatch("app/login", requestData)
         .then((response) => {
-          console.log("登录成功");
           //   路由页面跳转
           root.$router.push({
             name: "Console",
@@ -380,6 +382,7 @@ export default {
         })
         .catch((error) => {
           console.log("出错了");
+          console.log(error);
         });
       //   使用vuex实现异步操作
       //   Login(requestData)
