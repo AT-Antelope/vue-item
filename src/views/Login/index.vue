@@ -340,8 +340,9 @@ export default {
       // 原为$refs[formName]
       // context.refs[formName]，在setup()里传入{refs}，即解构，省略写法
       //   等于refs.forName
+      model.value == "login" ? loginData() : registerData();
+      //   !!!-未知，valid登录获取都是false，注册时又可以通过
       refs[formName].validate((valid) => {
-        // console.log(refs[formName]);
         if (valid) {
           // 表单验证通过
           //   if (model == "login") {
@@ -349,7 +350,6 @@ export default {
           //   } else {
           //     registerData();
           //   }
-          model.value == "login" ? loginData() : registerData();
           alert("submit!");
         } else {
           root.$message({
