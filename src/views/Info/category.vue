@@ -1,15 +1,19 @@
 <template>
   <div id="category">
-    <el-button type="danger">添加一级分类</el-button>
+    <el-button type="danger" @click="addFirst">添加一级分类</el-button>
     <hr class="hr-e9e9e9" />
     <div class="category-outter">
       <el-row :gutter="38">
         <el-col :span="8">
           <div class="category-wrap">
-            <div class="category-item">
+            <div
+              class="category-item"
+              v-for="firstItem in categoryData.item"
+              :key="firstItem.id"
+            >
               <h4>
                 <svg-icon iconID="plus" />
-                新闻
+                {{ firstItem.category_name }}
                 <div class="button-group">
                   <el-button type="danger" size="mini" round>编辑</el-button>
                   <el-button type="success" size="mini" round>添加子级</el-button>
@@ -17,77 +21,38 @@
                 </div>
               </h4>
               <ul>
-                <li>
-                  国内
+                <li v-for="childrenItem in firstItem.children" :key="childrenItem.id">
+                  {{ childrenItem.category_name }}
                   <div class="button-group">
                     <el-button type="danger" size="mini" round>编辑</el-button>
                     <el-button size="mini" round>删除</el-button>
                   </div>
                 </li>
-                <li>
-                  国际
-                  <div class="button-group">
-                    <el-button type="danger" size="mini" round>编辑</el-button>
-                    <el-button size="mini" round>删除</el-button>
-                  </div>
-                </li>
-                <li>
-                  数读
-                  <div class="button-group">
-                    <el-button type="danger" size="mini" round>编辑</el-button>
-                    <el-button size="mini" round>删除</el-button>
-                  </div>
-                </li>
-                <li>
-                  军事
-                  <div class="button-group">
-                    <el-button type="danger" size="mini" round>编辑</el-button>
-                    <el-button size="mini" round>删除</el-button>
-                  </div>
-                </li>
-                <li>
-                  航空
-                  <div class="button-group">
-                    <el-button type="danger" size="mini" round>编辑</el-button>
-                    <el-button size="mini" round>删除</el-button>
-                  </div>
-                </li>
-                <li>
-                  无人机
-                  <div class="button-group">
-                    <el-button type="danger" size="mini" round>编辑</el-button>
-                    <el-button size="mini" round>删除</el-button>
-                  </div>
-                </li>
-              </ul>
-            </div>
-            <div class="category-item">
-              <h4>
-                <svg-icon iconID="plus" />
-                新闻
-              </h4>
-              <ul>
-                <li>国内</li>
-                <li>国际</li>
-                <li>数读</li>
-                <li>军事</li>
-                <li>航空</li>
-                <li>无人机</li>
               </ul>
             </div>
           </div>
         </el-col>
         <el-col :span="16">
           <h4 class="menu-title">一级分类编辑</h4>
-          <el-form label-width="142px" :model="formLabelAlign" class="form-wrap">
-            <el-form-item label="一级分类名称：">
-              <el-input v-model="formLabelAlign.name"></el-input>
+          <el-form
+            ref="formCategory"
+            :model="formLabelAlign"
+            label-width="142px"
+            class="form-wrap"
+          >
+            <el-form-item label="一级分类名称：" v-if="category_first_input">
+              <el-input v-model="formLabelAlign.categoryName"></el-input>
             </el-form-item>
-            <el-form-item label="二级分类名称：">
-              <el-input v-model="formLabelAlign.region"></el-input>
+            <el-form-item label="二级分类名称：" v-if="category_second_input">
+              <el-input v-model="formLabelAlign.categoryNameSecond"></el-input>
             </el-form-item>
             <el-form-item>
-              <el-button type="danger">确定</el-button>
+              <el-button
+                type="danger"
+                @click="commit"
+                :loading="submit_button_loading_flag"
+                >确定</el-button
+              >
             </el-form-item>
           </el-form>
         </el-col>
@@ -96,17 +61,111 @@
   </div>
 </template>
 <script>
-import { reactive } from "@vue/composition-api";
+import { ref, reactive, onMounted } from "@vue/composition-api";
+import { AddFirstCategory, GetCategoryAll } from "@/api/news";
 export default {
   name: "category",
-  setup(props, { root }) {
-    const formLabelAlign = reactive({
-      name: "",
-      region: "",
-      type: "",
+  setup(props, { root, refs }) {
+    /**
+     * data
+     */
+    // 右侧一二级分类菜单输入框的显示切换
+    const category_first_input = ref(true);
+    const category_second_input = ref(true);
+    const submit_button_loading_flag = ref(false);
+
+    /**
+     * reactive
+     */
+    const categoryData = reactive({
+      item: [],
     });
+    // 右侧一二级菜单输入框值
+    const formLabelAlign = reactive({
+      categoryName: "",
+      categoryNameSecond: "",
+    });
+
+    /**
+     * methods
+     */
+    // 添加一级分类按钮
+    const addFirst = () => {
+      category_first_input.value = true;
+      category_second_input.value = false;
+    };
+
+    // 确定按钮
+    const commit = () => {
+      // 输入验证
+      if (!formLabelAlign.categoryName) {
+        root.$message({
+          type: "error",
+          message: "分类名称不能为空!",
+        });
+        return false;
+      }
+      // 修改按钮状态为加载中
+      submit_button_loading_flag.value = true;
+      let data = { categoryName: formLabelAlign.categoryName };
+      AddFirstCategory(data)
+        .then((response) => {
+          let data = response.data;
+          if (data.resCode === 0) {
+            root.$message({
+              type: "success",
+              message: data.message,
+            });
+            /**
+             *添加后更新data
+             * 两种方法:
+             * 1.请求获取分类接口，缺点:浪费资源
+             * 2.直接push请求接口后返回的数据
+             */
+            categoryData.item.push(data.data); // push，添加到数组末尾
+          }
+          // 修改按钮状态为可点击，无论是否添加成功
+          submit_button_loading_flag.value = false;
+          // 重置表单
+          formLabelAlign.categoryName = "";
+          formLabelAlign.categoryNameSecond = "";
+        })
+        .catch((error) => {
+          submit_button_loading_flag.value = false;
+          formLabelAlign.categoryName = "";
+          formLabelAlign.categoryNameSecond = "";
+        });
+    };
+    // 获取数据
+    const getCategory = () => {
+      GetCategoryAll({})
+        .then((response) => {
+          console.log("GetCategoryAll successful!");
+          let data = response.data.data;
+          categoryData.item = data;
+        })
+        .catch((error) => {});
+    };
+
+    /**
+     * 生命周期
+     */
+    onMounted(() => {
+      getCategory();
+    });
+
     return {
+      /* data */
+      category_first_input,
+      category_second_input,
+      submit_button_loading_flag,
+      /* reactive */
+      categoryData,
       formLabelAlign,
+      /* methods */
+      addFirst,
+      commit,
+      getCategory,
     };
   },
 };

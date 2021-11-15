@@ -319,7 +319,7 @@ export default {
         .then((response) => {
           root.$message({
             showClose: true,
-            duration: 30000,
+            duration: 5000,
             message: response.data.message,
             type: "success",
           });

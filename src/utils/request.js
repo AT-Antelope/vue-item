@@ -3,6 +3,7 @@
  */
 import axios from "axios";
 import { Message } from "element-ui";
+import { getToken, getUserName } from "@/utils/app";
 
 const BASEURL = process.env.NODE_ENV === "production" ? "" : "/devApi";
 
@@ -23,6 +24,8 @@ service.interceptors.request.use(
     // config.headers["Tokey"] = "333";
     // config.headers["userID"] = "444";
     // config.headers["UID"] = "555";
+    config.headers["Tokey"] = getToken();
+    config.headers["UserName"] = getUserName();
 
     return config;
   },
