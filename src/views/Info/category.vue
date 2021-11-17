@@ -82,8 +82,9 @@
   </div>
 </template>
 <script>
-import { ref, reactive, onMounted } from "@vue/composition-api";
+import { ref, reactive, onMounted, watch } from "@vue/composition-api";
 import { global } from "@/utils/global";
+import { common } from "@/utils/common";
 import {
   AddFirstCategory,
   GetCategoryAll,
@@ -94,6 +95,7 @@ export default {
   name: "category",
   setup(props, { root, refs }) {
     const { Comfirm } = global();
+    const { categoryItem, getInfoCategory } = common();
     /**
      * data
      */
@@ -197,15 +199,6 @@ export default {
         catchFn: () => {},
       });
     };
-    // 获取数据
-    const getCategory = () => {
-      GetCategoryAll({})
-        .then((response) => {
-          let data = response.data.data;
-          categoryData.item = data;
-        })
-        .catch((error) => {});
-    };
     // 编辑按钮
     const editCategory = (params) => {
       category_first_input.value = true;
@@ -296,8 +289,14 @@ export default {
      * 生命周期
      */
     onMounted(() => {
-      getCategory();
+      getInfoCategory();
     });
+    watch(
+      () => categoryItem.item,
+      (value) => {
+        categoryData.item = value;
+      }
+    );
 
     return {
       /* data */
@@ -317,7 +316,6 @@ export default {
       commit,
       AddFirstCategoryFn,
       EditCategoryFn,
-      getCategory,
       editCategory,
       editCategoryFn,
       deleteCategoryFirst,

@@ -4,14 +4,14 @@
     <el-row :gutter="14">
       <el-col :span="4">
         <div class="label-wrap category">
-          <label for="">类型: </label>
+          <label for="">分类: </label>
           <div class="wrap-content">
             <el-select v-model="category_value" placeholder="请选择">
               <el-option
-                v-for="item in formType_options"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
+                v-for="item in formType_options.category"
+                :key="item.id"
+                :label="item.category_name"
+                :value="item.id"
               >
               </el-option>
             </el-select>
@@ -125,21 +125,23 @@
 </template>
 <script>
 import DialogInfo from "./dialog/info";
-import { ref, reactive } from "@vue/composition-api";
+import { ref, reactive, onMounted, watch } from "@vue/composition-api";
 import { global } from "@/utils/global.js";
+// import { common } from "@/utils/common";
 export default {
   name: "infoIndex",
   components: { DialogInfo },
   setup(props, { root }) {
     //   自定义全局方法，调用后声明
     const { Comfirm } = global();
+    // const { categoryItem, getInfoCategory } = common();
     /**
      * data
      */
     // 新增按钮，父传子
     const dialog_info_add_flag = ref(false);
     // 表单类别选项框_默认值
-    const category_value = ref(1);
+    const category_value = ref("");
     // 选择日期
     const datePicker_value = ref("");
     // 关键字选项框_默认值
@@ -148,20 +150,9 @@ export default {
     const search_keyInput = ref("");
 
     // 表单类别
-    const formType_options = reactive([
-      {
-        value: 1,
-        label: "国际信息",
-      },
-      {
-        value: 2,
-        label: "国内信息",
-      },
-      {
-        value: 3,
-        label: "行业信息",
-      },
-    ]);
+    const formType_options = reactive({
+      category: [],
+    });
     // 关键字选项框
     const search_option = reactive([
       {
@@ -245,8 +236,27 @@ export default {
         fn: "",
       });
     };
-    // 批量删除执行方法
-    const deleteSelectedFn = () => {};
+    const getInfoCategory = () => {
+      root.$store.dispatch("common/getInfoCategory").then((response) => {
+        formType_options.category = response;
+      });
+    };
+
+    /**
+     * life cycle
+     */
+    onMounted(() => {
+      // 方法一，vue3.0全局方法，需要watch
+      //   getInfoCategory();
+      // 方法二，vuex，异步，都在vuex内定义好，只需要下面一小段
+      getInfoCategory();
+    });
+    // watch(
+    //   () => categoryItem.item,
+    //   (value) => {
+    //     formType_options.category = value;
+    //   }
+    // );
 
     return {
       /* ref */
@@ -265,7 +275,6 @@ export default {
       //   dialogClose,
       deleteItem,
       deleteSelected,
-      deleteSelectedFn,
     };
   },
 };
