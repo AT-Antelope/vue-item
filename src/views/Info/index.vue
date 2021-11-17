@@ -132,7 +132,7 @@ export default {
   components: { DialogInfo },
   setup(props, { root }) {
     //   自定义全局方法，调用后声明
-    const { deleteTableItem } = global();
+    const { Comfirm } = global();
     /**
      * data
      */
@@ -228,7 +228,7 @@ export default {
       //   });
 
       //   Vue3.0,(xxxy.value)可以做到监听(watch)到其他组件的值，不在必须在同一组件内调用方法
-      deleteTableItem({
+      Comfirm({
         msg: "是否删除此信息?",
         title: "提示",
         fn: "",
@@ -239,7 +239,7 @@ export default {
     // 批量删除
     const deleteSelected = () => {
       // 自定义全局方法
-      deleteTableItem({
+      Comfirm({
         msg: "是否删除所有已选中的信息?",
         title: "提示",
         fn: "",

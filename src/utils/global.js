@@ -1,6 +1,6 @@
 import { MessageBox } from "element-ui";
 export function global() {
-  const deleteTableItem = (params) => {
+  const Comfirm = (params) => {
     MessageBox.confirm(params.msg, params.title || "提示", {
       confirmButtonText: params.confirmButtonText || "确定",
       cancelButtonText: params.cancelButtonText || "取消",
@@ -12,13 +12,13 @@ export function global() {
         //     params.fn();
         //   }
         //   fn存在时为true，然后才执行fn()，相当于true && params.fn()
-        params.fn && params.fn();
+        params.fn && params.fn(params.id || "");
       })
       .catch(() => {
-        console.log("canceled");
+        params.catchFn && params.catchFn(params.id || "");
       });
   };
   return {
-    deleteTableItem,
+    Comfirm,
   };
 }
