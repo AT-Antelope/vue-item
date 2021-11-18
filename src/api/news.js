@@ -7,7 +7,22 @@ import service from "@/utils/request";
 /**
  * 新增
  * add
+ * {
+    "category_id": "18"
+    "content": "<p>Vue3.js真的很不错</p>"
+    "create_date": "2021-06-25 16:39:38"
+    "image_url": "http://qv18xxim7.hn-bkt.clouddn.com/1-7.jpg"
+    "status": "1"
+    "title": "Vue3.js真的很不错"
+}
  */
+export function AddInfo(data) {
+  return service.request({
+    method: "post",
+    url: "/news/add/",
+    data,
+  });
+}
 
 /**
  * 编辑

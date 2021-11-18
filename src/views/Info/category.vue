@@ -289,6 +289,9 @@ export default {
      * 生命周期
      */
     onMounted(() => {
+      // 方法二，vuex，异步，都在vuex内定义好，只需要下面一小段
+      // 方法一，vue3.0全局方法，需要watch
+      //   getInfoCategory();
       getInfoCategory();
     });
     watch(

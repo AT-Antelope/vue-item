@@ -120,21 +120,23 @@
 
     <!-- 新增弹窗 -->
     <!-- <DialogInfo :openFlag.sync="dialog_info_add_flag" @closeFlag="dialogClose" /> -->
-    <DialogInfo :openFlag.sync="dialog_info_add_flag" />
+    <DialogInfo
+      :openFlag.sync="dialog_info_add_flag"
+      :category="formType_options.category"
+    />
   </div>
 </template>
 <script>
 import DialogInfo from "./dialog/info";
 import { ref, reactive, onMounted, watch } from "@vue/composition-api";
 import { global } from "@/utils/global.js";
-// import { common } from "@/utils/common";
 export default {
   name: "infoIndex",
   components: { DialogInfo },
   setup(props, { root }) {
     //   自定义全局方法，调用后声明
     const { Comfirm } = global();
-    // const { categoryItem, getInfoCategory } = common();
+
     /**
      * data
      */
@@ -246,17 +248,8 @@ export default {
      * life cycle
      */
     onMounted(() => {
-      // 方法一，vue3.0全局方法，需要watch
-      //   getInfoCategory();
-      // 方法二，vuex，异步，都在vuex内定义好，只需要下面一小段
       getInfoCategory();
     });
-    // watch(
-    //   () => categoryItem.item,
-    //   (value) => {
-    //     formType_options.category = value;
-    //   }
-    // );
 
     return {
       /* ref */
