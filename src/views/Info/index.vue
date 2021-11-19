@@ -79,11 +79,11 @@
     <div class="black-space-30"></div>
 
     <!-- 表格数据 -->
-    <el-table :data="form_table" border style="width: 100%">
+    <el-table :data="form_table.item" border style="width: 100%">
       <el-table-column type="selection" width="55"> </el-table-column>
       <el-table-column prop="title" label="标题" width="830px"> </el-table-column>
-      <el-table-column prop="category" label="类别" width="130px"> </el-table-column>
-      <el-table-column prop="date" label="日期" width="237px"> </el-table-column>
+      <el-table-column prop="categoryId" label="类别" width="130px"> </el-table-column>
+      <el-table-column prop="createDate" label="日期" width="237px"> </el-table-column>
       <el-table-column prop="user" label="管理人" width="115px"> </el-table-column>
       <el-table-column label="操作">
         <template>
@@ -107,12 +107,12 @@
         <el-pagination
           class="float-right"
           background
-          @size-change="handleSize_change"
-          @current-change="handle_current_change"
-          :page-sizes="[100, 200, 300, 400]"
-          :page-size="100"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :page-sizes="[10, 20, 30, 40]"
+          :page-size="page.pageSize"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="400"
+          :total="infoTotal"
         >
         </el-pagination>
       </el-col>
@@ -150,6 +150,8 @@ export default {
     const search_key = ref("id");
     // 关键字搜索框
     const search_keyInput = ref("");
+    // 表单信息总数量
+    const infoTotal = ref(0);
 
     // 表单类别
     const formType_options = reactive({
@@ -167,43 +169,32 @@ export default {
       },
     ]);
     // 表格数据
-    const form_table = reactive([
-      {
-        title: "纽约市长白思豪宣布退出总统竞选，，特朗普发推回应",
-        category: "国内信息",
-        date: "2019-09-10 19:31:31",
-        user: "管理员",
-      },
-      {
-        title:
-          "习近平在中央政协工作会议庆祝中国人民政治协商会议成立70周年大会上发表重要讲话",
-        category: "国内信息",
-        date: "2019-09-10 19:31:31",
-        user: "张三",
-      },
-      {
-        title: "基里巴斯与台当局“断交”系蔡当局上台后断交第7国",
-        category: "国内信息",
-        date: "2019-09-10 19:31:31",
-        user: "李四",
-      },
-      {
-        title: "不选了！纽约市长白思豪宣布退出2020美国大选",
-        category: "国内信息",
-        date: "2019-09-10 19:31:31",
-        user: "李四",
-      },
-    ]);
+    //   {
+    //     title: "纽约市长白思豪宣布退出总统竞选，，特朗普发推回应",
+    //     category: "国内信息",
+    //     date: "2019-09-10 19:31:31",
+    //     user: "管理员",
+    //   },
+    const form_table = reactive({
+      item: [],
+    });
+    const page = reactive({
+      currentPage: 1,
+      pageSize: 10,
+    });
 
     /**
      * function
      */
     // 底部分页
-    const handleSize_change = (val) => {
-      console.log(`每页 ${val} 条`);
+    // 每页数量改变时触发
+    const handleSizeChange = (val) => {
+      page.pageSize = val;
     };
-    const handle_current_change = (val) => {
-      console.log(`当前页: ${val}`);
+    // 改变当前页数时触发
+    const handleCurrentChange = (val) => {
+      page.currentPage = val;
+      getInfo();
     };
     // 简单方法，使用.sync修饰器后，可以实现父子组件同步，直接向父组件修改值
     // 回调时需要做逻辑处理时，不能用修饰器
@@ -238,17 +229,49 @@ export default {
         fn: "",
       });
     };
+    // 获取分类信息
     const getInfoCategory = () => {
       root.$store.dispatch("common/getInfoCategory").then((response) => {
         formType_options.category = response;
       });
     };
-
+    //获取列表信息
+    /**
+     *  categoryId: "5183"
+        categoryName: null
+        content: "DDD"
+        createDate: "1637202836"
+        end_time: null
+        id: "550"
+        imgUrl: null
+        start_time: null
+        status: null
+        title: "A"
+     */
+    const getInfo = () => {
+      let requestData = {
+        categoryId: "",
+        title: "",
+        pageNumber: page.currentPage,
+        pageSize: page.pageSize,
+      };
+      root.$store
+        .dispatch("common/getInfoList", requestData)
+        .then((response) => {
+          let data = response.data;
+          form_table.item = data.data;
+          infoTotal.value = data.total;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
     /**
      * life cycle
      */
     onMounted(() => {
       getInfoCategory();
+      getInfo();
     });
 
     return {
@@ -258,13 +281,15 @@ export default {
       datePicker_value,
       search_key,
       search_keyInput,
+      infoTotal,
       /* reactive */
       formType_options,
       search_option,
       form_table,
+      page,
       /* function */
-      handleSize_change,
-      handle_current_change,
+      handleSizeChange,
+      handleCurrentChange,
       //   dialogClose,
       deleteItem,
       deleteSelected,

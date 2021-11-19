@@ -85,22 +85,6 @@ export default {
     });
 
     /**
-     * watch
-     */
-    //   watch: {   // vue2.0
-    //     openFlag: {
-    //       // 接收父组件传来的值
-    //       handler(newValue, oldValue) {
-    //         this.dialog_info_add_flag = newValue;
-    //       },
-    //     },
-    //   },
-    watchEffect(() => {
-      // 接收父组件传来的值
-      dialog_info_add_flag.value = props.openFlag;
-    });
-
-    /**
      * methods
      */
     // 关闭新增对话框，并在@close返回给父组件
@@ -167,6 +151,22 @@ export default {
       form.title = "";
       form.content = "";
     };
+
+    /**
+     * watch
+     */
+    //   watch: {   // vue2.0
+    //     openFlag: {
+    //       // 接收父组件传来的值
+    //       handler(newValue, oldValue) {
+    //         this.dialog_info_add_flag = newValue;
+    //       },
+    //     },
+    //   },
+    watchEffect(() => {
+      // 接收父组件传来的值
+      dialog_info_add_flag.value = props.openFlag;
+    });
 
     return {
       /* ref */

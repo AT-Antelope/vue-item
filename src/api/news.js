@@ -1,8 +1,21 @@
 import service from "@/utils/request";
 /**
- * 列表
- * list
+ * 获取列表
+ * getList
+ * {
+    categoryId: 1,
+    title: "vue3",
+    pageNumber: 1,
+    pageSize: 10
+}
  */
+export function GetList(data) {
+  return service.request({
+    method: "post",
+    url: "/news/getList/",
+    data,
+  });
+}
 
 /**
  * 新增
