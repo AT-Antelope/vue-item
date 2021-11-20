@@ -1,6 +1,6 @@
 import service from "@/utils/request";
 /**
- * 获取列表
+ * 信息获取
  * getList
  * {
     categoryId: 1,
@@ -18,7 +18,7 @@ export function GetList(data) {
 }
 
 /**
- * 新增
+ * 信息新增
  * add
  * {
     "category_id": "18"
@@ -38,7 +38,7 @@ export function AddInfo(data) {
 }
 
 /**
- * 编辑
+ * 信息编辑
  * edit
  *  {
         "categoryName":"vue3.0",
@@ -55,7 +55,21 @@ export function EditCategory(data) {
 }
 
 /**
- * 删除
+ * 信息删除
+ * {
+     id: "1,2,3" 或  id: "1"
+    }
+ */
+export function DeleteInfo(data) {
+  return service.request({
+    method: "post",
+    url: "/news/deleteInfo/",
+    data,
+  });
+}
+
+/**
+ * 分类删除
  *  {
         "categoryId":"244"
     }
@@ -85,7 +99,7 @@ export function AddFirstCategory(data) {
 }
 
 /**
- * 获取分类
+ * 分类获取
  * {}
  */
 export function GetCategoryAll(data) {

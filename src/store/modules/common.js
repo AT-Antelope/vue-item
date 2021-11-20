@@ -1,8 +1,8 @@
 import { Promise } from "core-js";
-import { GetCategoryAll, GetList } from "@/api/news";
+import { GetCategoryAll, GetList, DeleteInfo } from "@/api/news";
 
 const actions = {
-  // 获取分类列表
+  // 分类获取
   getInfoCategory(content, requestData) {
     return new Promise((resolve, reject) => {
       GetCategoryAll({})
@@ -14,12 +14,25 @@ const actions = {
         });
     });
   },
-  // 获取信息列表
+  // 信息获取
   getInfoList(content, requestData) {
     return new Promise((resolve, reject) => {
       GetList(requestData)
         .then((response) => {
           resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  // 信息删除
+  deleteInfo(content, requestData) {
+    return new Promise((resolve, reject) => {
+      // id: "1,2,3" 或  id: "1"
+      DeleteInfo(requestData)
+        .then((response) => {
+          resolve(response);
         })
         .catch((error) => {
           reject(error);

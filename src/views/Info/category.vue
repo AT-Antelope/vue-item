@@ -84,7 +84,6 @@
 <script>
 import { ref, reactive, onMounted, watch } from "@vue/composition-api";
 import { global } from "@/utils/global";
-import { common } from "@/utils/common";
 import {
   AddFirstCategory,
   GetCategoryAll,
@@ -94,8 +93,7 @@ import {
 export default {
   name: "category",
   setup(props, { root, refs }) {
-    const { Comfirm } = global();
-    const { categoryItem, getInfoCategory } = common();
+    const { Comfirm, categoryItem, getInfoCategory } = global();
     /**
      * data
      */

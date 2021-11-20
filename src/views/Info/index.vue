@@ -79,15 +79,34 @@
     <div class="black-space-30"></div>
 
     <!-- 表格数据 -->
-    <el-table :data="form_table.item" border style="width: 100%">
+    <el-table
+      :data="form_table.item"
+      border
+      v-loading="table_loading_flag"
+      style="width: 100%"
+    >
       <el-table-column type="selection" width="55"> </el-table-column>
       <el-table-column prop="title" label="标题" width="830px"> </el-table-column>
-      <el-table-column prop="categoryId" label="类别" width="130px"> </el-table-column>
-      <el-table-column prop="createDate" label="日期" width="237px"> </el-table-column>
+      <el-table-column
+        prop="categoryId"
+        label="类别"
+        :formatter="formatToTitle"
+        width="130px"
+      >
+      </el-table-column>
+      <el-table-column
+        prop="createDate"
+        label="日期"
+        :formatter="formatToDate"
+        width="237px"
+      >
+      </el-table-column>
       <el-table-column prop="user" label="管理人" width="115px"> </el-table-column>
       <el-table-column label="操作">
-        <template>
-          <el-button type="danger" size="mini" @click="deleteItem">删除</el-button>
+        <template slot-scope="scope">
+          <el-button type="danger" size="mini" @click="deleteItem(scope.row)"
+            >删除</el-button
+          >
           <el-button type="success" size="mini" @click="dialog_info_add_flag = true"
             >编辑</el-button
           >
@@ -130,6 +149,7 @@
 import DialogInfo from "./dialog/info";
 import { ref, reactive, onMounted, watch } from "@vue/composition-api";
 import { global } from "@/utils/global.js";
+import { timestampToTime } from "@/utils/common";
 export default {
   name: "infoIndex",
   components: { DialogInfo },
@@ -142,6 +162,8 @@ export default {
      */
     // 新增按钮，父传子
     const dialog_info_add_flag = ref(false);
+    // 表单加载中状态的flag
+    const table_loading_flag = ref(false);
     // 表单类别选项框_默认值
     const category_value = ref("");
     // 选择日期
@@ -196,6 +218,16 @@ export default {
       page.currentPage = val;
       getInfo();
     };
+    // 标题转换，formatter: element-ui组件的方法，返回一个值替换原始值
+    const formatToTitle = (row, column, cellValue, index) => {
+      let ID = row.categoryId;
+      let category = formType_options.category.filter((item) => item.id == ID)[0];
+      return category.category_name;
+    };
+    // 日期格式转换，formatter: element-ui组件的方法，返回一个值替换原始值
+    const formatToDate = (row, column, cellValue, index) => {
+      return timestampToTime(row.createDate);
+    };
     // 简单方法，使用.sync修饰器后，可以实现父子组件同步，直接向父组件修改值
     // 回调时需要做逻辑处理时，不能用修饰器
     // const dialogClose = () => {
@@ -203,7 +235,7 @@ export default {
     //   dialog_info_add_flag.value = false;
     // };
     // 删除操作
-    const deleteItem = () => {
+    const deleteItem = (data) => {
       // Vue2.0的方法
       //   root.deleteItem({
       //     msg: "是否删除此信息?",
@@ -215,11 +247,32 @@ export default {
       Comfirm({
         msg: "是否删除此信息?",
         title: "提示",
-        fn: "",
+        id: data.id,
+        fn: deleteItemFn,
+        catchFn: () => {},
       });
     };
     // 删除操作执行方法
-    const deleteItemFn = () => {};
+    const deleteItemFn = (data) => {
+      // id: "1,2,3" 或  id: "1"
+      let requestData = {
+        id: [data],
+      };
+      root.$store
+        .dispatch("common/deleteInfo", requestData)
+        .then((response) => {
+          console.log(response);
+          let data = response.data;
+          root.$message({
+            type: "success",
+            message: data.message,
+          });
+          getInfo();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
     // 批量删除
     const deleteSelected = () => {
       // 自定义全局方法
@@ -236,18 +289,6 @@ export default {
       });
     };
     //获取列表信息
-    /**
-     *  categoryId: "5183"
-        categoryName: null
-        content: "DDD"
-        createDate: "1637202836"
-        end_time: null
-        id: "550"
-        imgUrl: null
-        start_time: null
-        status: null
-        title: "A"
-     */
     const getInfo = () => {
       let requestData = {
         categoryId: "",
@@ -255,15 +296,18 @@ export default {
         pageNumber: page.currentPage,
         pageSize: page.pageSize,
       };
+      table_loading_flag.value = true; // 请求前显示加载中状态
       root.$store
         .dispatch("common/getInfoList", requestData)
         .then((response) => {
           let data = response.data;
-          form_table.item = data.data;
-          infoTotal.value = data.total;
+          form_table.item = data.data; // 更新数据
+          infoTotal.value = data.total; // 存储统计数据
+          table_loading_flag.value = false; // 请求成功更新加载状态
         })
         .catch((error) => {
           console.log(error);
+          table_loading_flag.value = false; // 请求失败也更新加载状态
         });
     };
     /**
@@ -277,6 +321,7 @@ export default {
     return {
       /* ref */
       dialog_info_add_flag,
+      table_loading_flag,
       category_value,
       datePicker_value,
       search_key,
@@ -290,6 +335,8 @@ export default {
       /* function */
       handleSizeChange,
       handleCurrentChange,
+      formatToTitle,
+      formatToDate,
       //   dialogClose,
       deleteItem,
       deleteSelected,
