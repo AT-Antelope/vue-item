@@ -5,6 +5,7 @@ import service from "@/utils/request";
  * {
     categoryId: 1,
     title: "vue3",
+    id: 1,
     pageNumber: 1,
     pageSize: 10
 }
@@ -58,6 +59,8 @@ export function EditCategory(data) {
  * 信息删除
  * {
      id: "1,2,3" 或  id: "1"
+     实际为
+     id:[1,2,3]
     }
  */
 export function DeleteInfo(data) {

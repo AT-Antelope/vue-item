@@ -27,6 +27,8 @@
             <el-date-picker
               v-model="datePicker_value"
               type="datetimerange"
+              format="yyyy-MM-dd HH:mm:ss"
+              value-format="yyyy-MM-dd HH:mm:ss"
               align="right"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
@@ -64,7 +66,7 @@
         ></el-input>
       </el-col>
       <el-col :span="2">
-        <el-button type="danger" style="width: 100%">搜索</el-button>
+        <el-button type="danger" style="width: 100%" @click="getInfo">搜索</el-button>
       </el-col>
       <!-- 必须为有个值才能撑大，为空时无效 -->
       <el-col :span="2">&nbsp;</el-col>
@@ -83,6 +85,7 @@
       :data="form_table.item"
       border
       v-loading="table_loading_flag"
+      @selection-change="selectionChanged"
       style="width: 100%"
     >
       <el-table-column type="selection" width="55"> </el-table-column>
@@ -169,9 +172,11 @@ export default {
     // 选择日期
     const datePicker_value = ref("");
     // 关键字选项框_默认值
-    const search_key = ref("id");
+    const search_key = ref("title");
     // 关键字搜索框
     const search_keyInput = ref("");
+    // 已勾选项目(删除)
+    const selectedItems = ref("");
     // 表单信息总数量
     const infoTotal = ref(0);
 
@@ -182,12 +187,12 @@ export default {
     // 关键字选项框
     const search_option = reactive([
       {
-        value: "id",
-        label: "ID",
-      },
-      {
         value: "title",
         label: "标题",
+      },
+      {
+        value: "id",
+        label: "ID",
       },
     ]);
     // 表格数据
@@ -217,6 +222,11 @@ export default {
     const handleCurrentChange = (val) => {
       page.currentPage = val;
       getInfo();
+    };
+    // 左侧选择项值发生变化时
+    const selectionChanged = (value) => {
+      let id = value.map((item) => item.id);
+      selectedItems.value = id;
     };
     // 标题转换，formatter: element-ui组件的方法，返回一个值替换原始值
     const formatToTitle = (row, column, cellValue, index) => {
@@ -275,12 +285,39 @@ export default {
     };
     // 批量删除
     const deleteSelected = () => {
+      if (!selectedItems.value || selectedItems.value.length == 0) {
+        root.$message({
+          type: "warning",
+          message: "请选择需要删除的数据！",
+        });
+        return false;
+      }
       // 自定义全局方法
       Comfirm({
         msg: "是否删除所有已选中的信息?",
         title: "提示",
-        fn: "",
+        fn: deleteSelectedFn,
       });
+    };
+    // 批量删除执行方法
+    const deleteSelectedFn = () => {
+      let requestData = { id: selectedItems.value };
+      root.$store
+        .dispatch("common/deleteInfo", requestData)
+        .then((response) => {
+          let data = response.data;
+          root.$message({
+            type: "success",
+            message: data.message,
+          });
+          // 删完后清除待删除暂存数组
+          selectedItems.value = "";
+          // 刷新数据
+          getInfo();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     };
     // 获取分类信息
     const getInfoCategory = () => {
@@ -288,14 +325,40 @@ export default {
         formType_options.category = response;
       });
     };
-    //获取列表信息
-    const getInfo = () => {
+    // 搜索/筛选条件处理
+    const handlerSearchCondition = () => {
+      // categoryId: 1,
+      // title: "vue3",
+      // id: 1,
+      // pageNumber: 1,
+      // pageSize: 10
       let requestData = {
-        categoryId: "",
-        title: "",
         pageNumber: page.currentPage,
         pageSize: page.pageSize,
       };
+      // 分类ID
+      if (category_value.value) {
+        requestData.categoryId = category_value.value;
+      }
+      // 日期
+      if (datePicker_value.value.length > 0) {
+        requestData.startTime = datePicker_value.value[0];
+        requestData.endTime = datePicker_value.value[1];
+      }
+      // 关键字
+      //   if (search_key.value == "id") {
+      //     requestData.id = search_keyInput.value;
+      //   }
+      //   if (search_key.value == "title") {
+      //     requestData.title = search_keyInput.value;
+      //   }
+      requestData[search_key.value] = search_keyInput.value;
+
+      return requestData;
+    };
+    //获取列表信息
+    const getInfo = () => {
+      let requestData = handlerSearchCondition();
       table_loading_flag.value = true; // 请求前显示加载中状态
       root.$store
         .dispatch("common/getInfoList", requestData)
@@ -326,20 +389,25 @@ export default {
       datePicker_value,
       search_key,
       search_keyInput,
+      selectedItems,
       infoTotal,
       /* reactive */
       formType_options,
-      search_option,
       form_table,
+      search_option,
       page,
       /* function */
       handleSizeChange,
       handleCurrentChange,
+      handlerSearchCondition,
+      selectionChanged,
       formatToTitle,
       formatToDate,
       //   dialogClose,
       deleteItem,
       deleteSelected,
+      deleteSelectedFn,
+      getInfo,
     };
   },
 };
