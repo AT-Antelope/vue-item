@@ -1,5 +1,5 @@
 import { Promise } from "core-js";
-import { GetCategoryAll, GetList, DeleteInfo } from "@/api/news";
+import { GetCategoryAll, GetList, DeleteInfo, EditInfo } from "@/api/news";
 
 const actions = {
   // 分类获取
@@ -31,6 +31,18 @@ const actions = {
     return new Promise((resolve, reject) => {
       // id: "1,2,3" 或  id: "1"
       DeleteInfo(requestData)
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  // 信息修改
+  editInfo(content, requestData) {
+    return new Promise((resolve, reject) => {
+        EditInfo(requestData)
         .then((response) => {
           resolve(response);
         })

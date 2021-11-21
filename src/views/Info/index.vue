@@ -110,7 +110,7 @@
           <el-button type="danger" size="mini" @click="deleteItem(scope.row)"
             >删除</el-button
           >
-          <el-button type="success" size="mini" @click="dialog_info_add_flag = true"
+          <el-button type="success" size="mini" @click="buttonEditInfo(scope.row.id)"
             >编辑</el-button
           >
         </template>
@@ -146,16 +146,23 @@
       :openFlag.sync="dialog_info_add_flag"
       :category="formType_options.category"
     />
+    <DialogInfoEdit
+      :openFlag.sync="dialog_info_edit_flag"
+      :id="editingInfoID"
+      :category="formType_options.category"
+      @getList="getInfo"
+    />
   </div>
 </template>
 <script>
 import DialogInfo from "./dialog/info";
+import DialogInfoEdit from "./dialog/infoEdit";
 import { ref, reactive, onMounted, watch } from "@vue/composition-api";
 import { global } from "@/utils/global.js";
 import { timestampToTime } from "@/utils/common";
 export default {
   name: "infoIndex",
-  components: { DialogInfo },
+  components: { DialogInfo, DialogInfoEdit },
   setup(props, { root }) {
     //   自定义全局方法，调用后声明
     const { Comfirm } = global();
@@ -163,8 +170,9 @@ export default {
     /**
      * data
      */
-    // 新增按钮，父传子
+    // 新增弹窗显示状态，父传子
     const dialog_info_add_flag = ref(false);
+    const dialog_info_edit_flag = ref(false);
     // 表单加载中状态的flag
     const table_loading_flag = ref(false);
     // 表单类别选项框_默认值
@@ -175,6 +183,8 @@ export default {
     const search_key = ref("title");
     // 关键字搜索框
     const search_keyInput = ref("");
+    // 修改中的信息ID
+    const editingInfoID = ref("");
     // 已勾选项目(删除)
     const selectedItems = ref("");
     // 表单信息总数量
@@ -283,6 +293,13 @@ export default {
           console.log(error);
         });
     };
+    // 编辑按钮
+    const buttonEditInfo = (id) => {
+      // 储存当前要修改的信息ID，用于父传子给DialogInfoEdit自定义组件
+      editingInfoID.value = id;
+      // 显示自定义组件
+      dialog_info_edit_flag.value = true;
+    };
     // 批量删除
     const deleteSelected = () => {
       if (!selectedItems.value || selectedItems.value.length == 0) {
@@ -384,11 +401,13 @@ export default {
     return {
       /* ref */
       dialog_info_add_flag,
+      dialog_info_edit_flag,
       table_loading_flag,
       category_value,
       datePicker_value,
       search_key,
       search_keyInput,
+      editingInfoID,
       selectedItems,
       infoTotal,
       /* reactive */
@@ -405,6 +424,7 @@ export default {
       formatToDate,
       //   dialogClose,
       deleteItem,
+      buttonEditInfo,
       deleteSelected,
       deleteSelectedFn,
       getInfo,

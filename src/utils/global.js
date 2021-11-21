@@ -1,5 +1,6 @@
 import { MessageBox } from "element-ui";
 import { reactive } from "@vue/composition-api";
+import { GetCategoryAll } from "@/api/news";
 export function global() {
   // 分类数组，用于储存getInfoCategory()获得的数据
   const categoryItem = reactive({
@@ -12,7 +13,7 @@ export function global() {
   // 方法二
   // 使用Vuex，实现异步
   //   方法一
-  const getInfoCategory = () => {
+  const getInfoCategoryAll = () => {
     GetCategoryAll({})
       .then((response) => {
         let data = response.data.data;
@@ -47,7 +48,7 @@ export function global() {
     // data
     categoryItem,
     // methods
-    getInfoCategory,
+    getInfoCategoryAll,
     Comfirm,
   };
 }

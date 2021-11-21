@@ -27,7 +27,18 @@
                     "
                     >编辑</el-button
                   >
-                  <el-button type="success" size="mini" round>添加子级</el-button>
+                  <el-button
+                    type="success"
+                    size="mini"
+                    round
+                    @click="
+                      buttonAddChildren({
+                        data: firstItem,
+                        type: 'category_children_add',
+                      })
+                    "
+                    >添加子级</el-button
+                  >
                   <el-button size="mini" round @click="deleteCategoryFirst(firstItem.id)"
                     >删除</el-button
                   >
@@ -84,6 +95,7 @@
 <script>
 import { ref, reactive, onMounted, watch } from "@vue/composition-api";
 import { global } from "@/utils/global";
+import { AddChildrenCategory } from "@/api/news";
 import {
   AddFirstCategory,
   GetCategoryAll,
@@ -93,10 +105,11 @@ import {
 export default {
   name: "category",
   setup(props, { root, refs }) {
-    const { Comfirm, categoryItem, getInfoCategory } = global();
+    const { Comfirm, categoryItem, getInfoCategoryAll } = global();
     /**
      * data
      */
+    // 确定按钮的类型
     const submit_button_type = ref("");
     // 右侧一二级分类菜单输入框的显示切换
     const category_first_input = ref(true);
@@ -154,6 +167,9 @@ export default {
       if (submit_button_type.value == "category_first_edit") {
         EditCategoryFn();
       }
+      if (submit_button_type.value == "category_children_add") {
+        addChildrenCategoryFn();
+      }
     };
     // 确定按钮_增加一级分类
     const AddFirstCategoryFn = () => {
@@ -197,21 +213,6 @@ export default {
         catchFn: () => {},
       });
     };
-    // 编辑按钮
-    const editCategory = (params) => {
-      category_first_input.value = true;
-      category_first_input_disabled.value = false;
-      category_second_input.value = false;
-      category_children_input_disabled.value = true;
-      category_button_disabled.value = false;
-
-      // 一级名称输入还原名称
-      formLabelAlign.categoryName = params.data.category_name;
-      // 暂存提交按钮的类型
-      submit_button_type.value = params.type;
-      // 储存当前数据对象
-      categoryData.current = params.data;
-    };
     // 修改_确定提交时调用
     const editCategoryFn = () => {
       // 因修改后清除了categoryData.current，连续修改时，会出现无法正确传参的情况(参数不符)
@@ -248,6 +249,73 @@ export default {
         .catch((error) => {
           console.log(error);
         });
+    };
+    // 确定按钮_添加子级
+    const addChildrenCategoryFn = () => {
+      // 子级输入框为空时跳出
+      if (!formLabelAlign.categoryNameSecond) {
+        root.$message({
+          type: "error",
+          message: "子级分类名称不能为空！",
+        });
+        return false;
+      }
+      let requestData = {
+        categoryName: formLabelAlign.categoryNameSecond,
+        parentId: categoryData.current.id,
+      };
+      // 按钮加载中状态，加载中
+      submit_button_loading.value = true;
+      AddChildrenCategory(requestData)
+        .then((response) => {
+          let responseData = response.data;
+          root.$message({
+            type: "success",
+            message: responseData.message,
+          });
+          // 调用分类获取接口
+          getInfoCategoryAll();
+          // 清空子级输入框内容
+          formLabelAlign.categoryNameSecond = "";
+          // 按钮加载中状态，解除
+          submit_button_loading.value = false;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+    // 编辑按钮
+    const editCategory = (params) => {
+      category_first_input.value = true;
+      category_first_input_disabled.value = false;
+      category_second_input.value = false;
+      category_children_input_disabled.value = true;
+      category_button_disabled.value = false;
+
+      // 一级名称输入还原名称
+      formLabelAlign.categoryName = params.data.category_name;
+      // 暂存提交按钮的类型
+      submit_button_type.value = params.type;
+      // 储存当前数据对象
+      categoryData.current = params.data;
+    };
+    // 添加子级按钮
+    const buttonAddChildren = (params) => {
+      // 存储数据
+      categoryData.current = params.data;
+      // 同步显示一级分类输入框的值
+      formLabelAlign.categoryName = params.data.category_name;
+      // 确定按钮的类型
+      submit_button_type.value = params.type;
+
+      // 一级输入框，禁用
+      category_first_input_disabled.value = true;
+      // 二级输入框，显示
+      category_second_input.value = true;
+      // 二级输入框,禁用解除
+      category_children_input_disabled.value = false;
+      // 确定按钮，禁用解除
+      category_button_disabled.value = false;
     };
     // 删除一级数据
     const deleteCategoryFirst = (categoryId) => {
@@ -290,7 +358,7 @@ export default {
       // 方法二，vuex，异步，都在vuex内定义好，只需要下面一小段
       // 方法一，vue3.0全局方法，需要watch
       //   getInfoCategory();
-      getInfoCategory();
+      getInfoCategoryAll();
     });
     watch(
       () => categoryItem.item,
@@ -319,6 +387,7 @@ export default {
       EditCategoryFn,
       editCategory,
       editCategoryFn,
+      buttonAddChildren,
       deleteCategoryFirst,
       deleteCategoryFirstFn,
     };
