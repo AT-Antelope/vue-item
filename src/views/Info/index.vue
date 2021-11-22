@@ -150,6 +150,7 @@
       :openFlag.sync="dialog_info_edit_flag"
       :id="editingInfoID"
       :category="formType_options.category"
+      @getTitle="getTitle"
       @getList="getInfo"
     />
   </div>
@@ -373,7 +374,7 @@ export default {
 
       return requestData;
     };
-    //获取列表信息
+    //获取列表信息_子传父_新增弹窗
     const getInfo = () => {
       let requestData = handlerSearchCondition();
       table_loading_flag.value = true; // 请求前显示加载中状态
@@ -390,6 +391,15 @@ export default {
           table_loading_flag.value = false; // 请求失败也更新加载状态
         });
     };
+    // 获取标题_子传父_编辑弹窗
+    const getTitle = (returnData) => {
+      console.log(returnData);
+      console.log(form_table.item);
+      let data = form_table.item.filter((item) => item.id == returnData.id);
+      console.log(data);
+      data[0].title = returnData.title;
+    };
+
     /**
      * life cycle
      */
@@ -427,6 +437,7 @@ export default {
       buttonEditInfo,
       deleteSelected,
       deleteSelectedFn,
+      getTitle,
       getInfo,
     };
   },

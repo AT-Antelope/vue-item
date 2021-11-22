@@ -49,8 +49,21 @@
                 <li v-for="childrenItem in firstItem.children" :key="childrenItem.id">
                   {{ childrenItem.category_name }}
                   <div class="button-group">
-                    <el-button type="danger" size="mini" round>编辑</el-button>
-                    <el-button size="mini" round>删除</el-button>
+                    <el-button
+                      type="danger"
+                      size="mini"
+                      round
+                      @click="
+                        buttonEditChildren({
+                          data: childrenItem,
+                          type: 'category_children_edit',
+                        })
+                      "
+                      >编辑</el-button
+                    >
+                    <el-button size="mini" round @click="buttonDeleteChildren"
+                      >删除</el-button
+                    >
                   </div>
                 </li>
               </ul>
@@ -95,9 +108,9 @@
 <script>
 import { ref, reactive, onMounted, watch } from "@vue/composition-api";
 import { global } from "@/utils/global";
-import { AddChildrenCategory } from "@/api/news";
 import {
   AddFirstCategory,
+  AddChildrenCategory,
   GetCategoryAll,
   EditCategory,
   DeleteCategory,
@@ -154,7 +167,7 @@ export default {
     // 确定按钮(提交)
     const commit = () => {
       // 输入验证
-      if (!formLabelAlign.categoryName) {
+      if (!formLabelAlign.categoryName && !formLabelAlign.categoryNameSecond) {
         root.$message({
           type: "error",
           message: "分类名称不能为空!",
@@ -164,7 +177,10 @@ export default {
       if (submit_button_type.value == "category_first_add") {
         AddFirstCategoryFn();
       }
-      if (submit_button_type.value == "category_first_edit") {
+      if (
+        submit_button_type.value == "category_first_edit" ||
+        submit_button_type.value == "category_children_edit"
+      ) {
         EditCategoryFn();
       }
       if (submit_button_type.value == "category_children_add") {
@@ -224,7 +240,10 @@ export default {
         return false;
       }
       let data = {
-        categoryName: formLabelAlign.categoryName,
+        categoryName:
+          submit_button_type.value == "category_first_edit"
+            ? formLabelAlign.categoryName
+            : formLabelAlign.categoryNameSecond,
         id: categoryData.current.id,
       };
       EditCategory(data)
@@ -250,6 +269,26 @@ export default {
           console.log(error);
         });
     };
+    // 编辑按钮_子级
+    const buttonEditChildren = (params) => {
+      // 储存当前数据对象
+      categoryData.current = params.data;
+      // 储存确定按钮类型
+      submit_button_type.value = params.type;
+      // 清空二级输入框
+      formLabelAlign.categoryNameSecond = "";
+
+      // 一级输入框
+      category_first_input.value = false; // 隐藏
+      category_first_input_disabled.value = true; // 禁用
+      // 二级输入框
+      category_second_input.value = true; // 显示
+      category_children_input_disabled.value = false; // 禁用解除
+      // 确定按钮
+      category_button_disabled.value = false;
+    };
+    // 删除按钮_子级
+    const buttonDeleteChildren = () => {};
     // 确定按钮_添加子级
     const addChildrenCategoryFn = () => {
       // 子级输入框为空时跳出
@@ -383,6 +422,8 @@ export default {
       /* methods */
       addFirst,
       commit,
+      buttonEditChildren,
+      buttonDeleteChildren,
       AddFirstCategoryFn,
       EditCategoryFn,
       editCategory,

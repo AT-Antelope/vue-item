@@ -118,7 +118,6 @@ export default {
         .dispatch("common/getInfoList", requestData)
         .then((response) => {
           let data = response.data.data[0];
-          console.log(data);
           form.category = data.categoryId;
           form.title = data.title;
           form.content = data.content;
@@ -166,9 +165,12 @@ export default {
           submit_loading_flag.value = false;
           // 两种数据刷新方式
           // 2.返回列表，手动修改指定的数据，思路: 把ID传出去，通过ID筛选出的数据列表，改变title
+          emit("getTitle", { title: form.title, id: props.id });
           // 1.暴力型，直接刷新接口
-          emit("getList");
+          //   emit("getList");
           resetForm(); // 清空表单
+          // 关闭编辑弹窗窗口
+          emit("update:openFlag", false);
         })
         .catch((error) => {
           console.log(error);
@@ -180,7 +182,7 @@ export default {
     const resetForm = () => {
       // 清除分类选择器
       form.category = "";
-      form.title = "";
+      form.title = "";  
       form.content = "";
     };
 
