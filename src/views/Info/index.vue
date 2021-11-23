@@ -113,6 +113,9 @@
           <el-button type="success" size="mini" @click="buttonEditInfo(scope.row.id)"
             >编辑</el-button
           >
+          <router-link :to="{ name: 'InfoDetails' }" class="margin-left-10">
+            <el-button type="success" size="mini">编辑详情</el-button>
+          </router-link>
         </template>
       </el-table-column>
     </el-table>
@@ -123,7 +126,9 @@
     <!-- 底部分页 -->
     <el-row>
       <el-col :span="12">
-        <el-button size="small" @click="deleteSelected">批量删除</el-button>
+        <el-button size="small" @click="deleteSelected" class="button-color-black"
+          >批量删除</el-button
+        >
       </el-col>
       <el-col :span="12">
         <el-pagination
@@ -146,6 +151,7 @@
       :openFlag.sync="dialog_info_add_flag"
       :category="formType_options.category"
     />
+    <!-- 编辑弹窗 -->
     <DialogInfoEdit
       :openFlag.sync="dialog_info_edit_flag"
       :id="editingInfoID"
@@ -442,6 +448,9 @@ export default {
 </script>
 <style lang="scss" scoped>
 // @import "@/styles/config.scss";
+button {
+  color: white;
+}
 .label-wrap {
   &.category {
     //   $text-align, $width, $line-height
