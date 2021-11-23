@@ -1,8 +1,8 @@
 <template>
   <div>
     <el-dialog
-      title="新增"
-      :visible.sync="dialog_info_add_flag"
+      title="编辑"
+      :visible.sync="dialog_info_edit_flag"
       @close="closeDialog"
       @opened="openDialog"
       width="580px"
@@ -56,6 +56,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    id: {
+      type: String,
+      default: "",
+    },
     category: {
       type: Array,
       default: () => [],
@@ -66,7 +70,7 @@ export default {
      * data
      */
     // 新增会话框的显示flag
-    const dialog_info_add_flag = ref(false); // 实际上使用.sync修饰器后子组件内的初始值并没有效果
+    const dialog_info_edit_flag = ref(false); // 实际上使用.sync修饰器后子组件内的初始值并没有效果
     // 标识label宽度
     const formLabelWidth = ref("70px");
     // 确定按钮的是否加载中状态
@@ -90,7 +94,7 @@ export default {
     // 关闭新增对话框，并在@close返回给父组件
     const closeDialog = () => {
       // 关闭对话框时，将本组件的dialog_info_add_flag值修改为false
-      dialog_info_add_flag.value = false;
+      dialog_info_edit_flag.value = false;
       //   //   返回给父组件的值
       //   this.$emit("closeFlag", false);
       //   更简单的方法，直接使用.sync修饰器，将子传父的值绑定
@@ -101,6 +105,26 @@ export default {
     // 点击新增按钮时把接收父组件的数据存储起来
     const openDialog = () => {
       categoryOptions.item = props.category;
+      getInfo();
+    };
+    // 获取信息，被openDialog调用
+    const getInfo = () => {
+      let requestData = {
+        id: props.id,
+        pageNumber: 1,
+        pageSize: 1,
+      };
+      root.$store
+        .dispatch("common/getInfoList", requestData)
+        .then((response) => {
+          let data = response.data.data[0];
+          form.category = data.categoryId;
+          form.title = data.title;
+          form.content = data.content;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     };
     // element-ui的select组件的change:选中值发生变化时触发事件
     const categorySelectChanged = (value) => {
@@ -119,15 +143,18 @@ export default {
       }
       // 改变按钮状态为加载中
       submit_loading_flag.value = true;
-      let data = {
-        category_id: categoryOptions.current.id,
-        title: form.title,
+      // 请求参数
+      let requestData = {
+        id: props.id,
+        categoryId: form.category,
         content: form.content,
-        // create_date: "2021-06-25 16:39:38",
-        // image_url: "http://qv18xxim7.hn-bkt.clouddn.com/1-7.jpg",
-        // status: "1",
+        title: form.title,
+        // create_date: "",
+        // image_url: "",
+        // status: "",
       };
-      AddInfo(data)
+      root.$store
+        .dispatch("common/editInfo", requestData)
         .then((response) => {
           let data = response.data;
           root.$message({
@@ -136,8 +163,13 @@ export default {
           });
           // 取消按钮加载中状态
           submit_loading_flag.value = false;
-          resetForm();
-          // 成功后关闭新增页面
+          // 两种数据刷新方式
+          // 2.返回列表，手动修改指定的数据，思路: 把ID传出去，通过ID筛选出的数据列表，改变title
+          emit("getTitle", { title: form.title, id: props.id });
+          // 1.暴力型，直接刷新接口
+          //   emit("getList");
+          resetForm(); // 清空表单
+          // 关闭编辑弹窗窗口
           emit("update:openFlag", false);
         })
         .catch((error) => {
@@ -146,11 +178,11 @@ export default {
           submit_loading_flag.value = false;
         });
     };
-    // 清除表单，element-ui的resetFields()无效，采用传统方法
+    // 清空表单，element-ui的resetFields()无效，采用传统方法
     const resetForm = () => {
       // 清除分类选择器
       form.category = "";
-      form.title = "";
+      form.title = "";  
       form.content = "";
     };
 
@@ -161,18 +193,18 @@ export default {
     //     openFlag: {
     //       // 接收父组件传来的值
     //       handler(newValue, oldValue) {
-    //         this.dialog_info_add_flag = newValue;
+    //         this.dialog_info_edit_flag = newValue;
     //       },
     //     },
     //   },
     watchEffect(() => {
       // 接收父组件传来的值
-      dialog_info_add_flag.value = props.openFlag;
+      dialog_info_edit_flag.value = props.openFlag;
     });
 
     return {
       /* ref */
-      dialog_info_add_flag,
+      dialog_info_edit_flag,
       formLabelWidth,
       submit_loading_flag,
       /* reactive */
@@ -181,6 +213,7 @@ export default {
       /* methods */
       closeDialog,
       openDialog,
+      getInfo,
       categorySelectChanged,
       submit,
       resetForm,

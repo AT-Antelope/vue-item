@@ -1,6 +1,8 @@
 <template>
   <div id="category">
-    <el-button type="danger" @click="addFirst">添加一级分类</el-button>
+    <el-button type="danger" @click="addFirst({ type: 'category_first_add' })"
+      >添加一级分类</el-button
+    >
     <hr class="hr-e9e9e9" />
     <div class="category-outter">
       <el-row :gutter="38">
@@ -11,21 +13,60 @@
               v-for="firstItem in categoryData.item"
               :key="firstItem.id"
             >
+              <!-- 一级分类 -->
               <h4>
                 <svg-icon iconID="plus" />
                 {{ firstItem.category_name }}
                 <div class="button-group">
-                  <el-button type="danger" size="mini" round>编辑</el-button>
-                  <el-button type="success" size="mini" round>添加子级</el-button>
-                  <el-button size="mini" round>删除</el-button>
+                  <el-button
+                    type="danger"
+                    size="mini"
+                    round
+                    @click="
+                      editCategory({ data: firstItem, type: 'category_first_edit' })
+                    "
+                    >编辑</el-button
+                  >
+                  <el-button
+                    type="success"
+                    size="mini"
+                    round
+                    @click="
+                      buttonAddChildren({
+                        data: firstItem,
+                        type: 'category_children_add',
+                      })
+                    "
+                    >添加子级</el-button
+                  >
+                  <el-button size="mini" round @click="deleteCategoryFirst(firstItem.id)"
+                    >删除</el-button
+                  >
                 </div>
               </h4>
+              <!-- 子级分类 -->
               <ul>
                 <li v-for="childrenItem in firstItem.children" :key="childrenItem.id">
                   {{ childrenItem.category_name }}
                   <div class="button-group">
-                    <el-button type="danger" size="mini" round>编辑</el-button>
-                    <el-button size="mini" round>删除</el-button>
+                    <el-button
+                      type="danger"
+                      size="mini"
+                      round
+                      @click="
+                        buttonEditChildren({
+                          data: childrenItem,
+                          type: 'category_children_edit',
+                        })
+                      "
+                      >编辑</el-button
+                    >
+                    <el-button
+                      size="mini"
+                      round
+                      @click="buttonDeleteChildren(childrenItem.id)"
+                      >删除</el-button
+                    >
                   </div>
                 </li>
               </ul>
@@ -41,16 +82,23 @@
             class="form-wrap"
           >
             <el-form-item label="一级分类名称：" v-if="category_first_input">
-              <el-input v-model="formLabelAlign.categoryName"></el-input>
+              <el-input
+                v-model="formLabelAlign.categoryName"
+                :disabled="category_first_input_disabled"
+              ></el-input>
             </el-form-item>
             <el-form-item label="二级分类名称：" v-if="category_second_input">
-              <el-input v-model="formLabelAlign.categoryNameSecond"></el-input>
+              <el-input
+                v-model="formLabelAlign.categoryNameSecond"
+                :disabled="category_children_input_disabled"
+              ></el-input>
             </el-form-item>
             <el-form-item>
               <el-button
                 type="danger"
                 @click="commit"
-                :loading="submit_button_loading_flag"
+                :loading="submit_button_loading"
+                :disabled="category_button_disabled"
                 >确定</el-button
               >
             </el-form-item>
@@ -61,24 +109,42 @@
   </div>
 </template>
 <script>
-import { ref, reactive, onMounted } from "@vue/composition-api";
-import { AddFirstCategory, GetCategoryAll } from "@/api/news";
+import { ref, reactive, onMounted, watch } from "@vue/composition-api";
+import { global } from "@/utils/global";
+import {
+  AddFirstCategory,
+  AddChildrenCategory,
+  GetCategoryAll,
+  EditCategory,
+  DeleteCategory,
+} from "@/api/news";
 export default {
   name: "category",
   setup(props, { root, refs }) {
+    const { Comfirm, categoryItem, getInfoCategoryAll } = global();
     /**
      * data
      */
+    // 确定按钮的类型
+    const submit_button_type = ref("");
     // 右侧一二级分类菜单输入框的显示切换
     const category_first_input = ref(true);
     const category_second_input = ref(true);
-    const submit_button_loading_flag = ref(false);
+    const submit_button_loading = ref(false);
+    const category_first_input_disabled = ref(true);
+    const category_children_input_disabled = ref(true);
+    const category_button_disabled = ref(true);
+    // 储存删除的ID暂存值
+    const deleteID = ref("");
 
     /**
      * reactive
      */
+    // 表单数据
     const categoryData = reactive({
       item: [],
+      // 用于储存当前对象
+      current: [],
     });
     // 右侧一二级菜单输入框值
     const formLabelAlign = reactive({
@@ -90,23 +156,44 @@ export default {
      * methods
      */
     // 添加一级分类按钮
-    const addFirst = () => {
+    const addFirst = (param) => {
       category_first_input.value = true;
       category_second_input.value = false;
+      category_first_input_disabled.value = false;
+      category_button_disabled.value = false;
+      formLabelAlign.categoryName = "";
+
+      // 暂存提交按钮的类型
+      submit_button_type.value = param.type;
     };
 
-    // 确定按钮
+    // 确定按钮(提交)
     const commit = () => {
       // 输入验证
-      if (!formLabelAlign.categoryName) {
+      if (!formLabelAlign.categoryName && !formLabelAlign.categoryNameSecond) {
         root.$message({
           type: "error",
           message: "分类名称不能为空!",
         });
         return false;
       }
+      if (submit_button_type.value == "category_first_add") {
+        AddFirstCategoryFn();
+      }
+      if (
+        submit_button_type.value == "category_first_edit" ||
+        submit_button_type.value == "category_children_edit"
+      ) {
+        EditCategoryFn();
+      }
+      if (submit_button_type.value == "category_children_add") {
+        addChildrenCategoryFn();
+      }
+    };
+    // 确定按钮_增加一级分类
+    const AddFirstCategoryFn = () => {
       // 修改按钮状态为加载中
-      submit_button_loading_flag.value = true;
+      submit_button_loading.value = true;
       let data = { categoryName: formLabelAlign.categoryName };
       AddFirstCategory(data)
         .then((response) => {
@@ -116,7 +203,7 @@ export default {
               type: "success",
               message: data.message,
             });
-            /**
+            /**cs
              *添加后更新data
              * 两种方法:
              * 1.请求获取分类接口，缺点:浪费资源
@@ -125,47 +212,233 @@ export default {
             categoryData.item.push(data.data); // push，添加到数组末尾
           }
           // 修改按钮状态为可点击，无论是否添加成功
-          submit_button_loading_flag.value = false;
+          submit_button_loading.value = false;
           // 重置表单
           formLabelAlign.categoryName = "";
           formLabelAlign.categoryNameSecond = "";
         })
         .catch((error) => {
-          submit_button_loading_flag.value = false;
+          submit_button_loading.value = false;
           formLabelAlign.categoryName = "";
           formLabelAlign.categoryNameSecond = "";
         });
     };
-    // 获取数据
-    const getCategory = () => {
-      GetCategoryAll({})
+    // 确定按钮_修改一级分类
+    const EditCategoryFn = () => {
+      Comfirm({
+        msg: "是否修改信息?",
+        title: "提示",
+        fn: editCategoryFn,
+        catchFn: () => {},
+      });
+    };
+    // 修改_确定提交时调用
+    const editCategoryFn = () => {
+      // 因修改后清除了categoryData.current，连续修改时，会出现无法正确传参的情况(参数不符)
+      if (categoryData.current.length == 0) {
+        root.$message({
+          type: "error",
+          message: "未选择分类",
+        });
+        return false;
+      }
+      let data = {
+        categoryName:
+          submit_button_type.value == "category_first_edit"
+            ? formLabelAlign.categoryName
+            : formLabelAlign.categoryNameSecond,
+        id: categoryData.current.id,
+      };
+      EditCategory(data)
         .then((response) => {
-          console.log("GetCategoryAll successful!");
-          let data = response.data.data;
-          categoryData.item = data;
+          let responseData = response.data;
+          root.$message({
+            type: "success",
+            message: responseData.message,
+          });
+
+          //   // 更新界面
+          //   // 引用，也可直接用链式编程的方式
+          //   let data = categoryData.item.filter(
+          //     (item) => item.id == categoryData.current.id
+          //   );
+          //   data[0].category_name = responseData.data.data.categoryName;
+          categoryData.current.category_name = responseData.data.data.categoryName;
+
+          formLabelAlign.categoryName = ""; // 清空输入框名称
+          categoryData.current = []; // 清空临时储存
         })
-        .catch((error) => {});
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+    // 编辑按钮_子级
+    const buttonEditChildren = (params) => {
+      // 储存当前数据对象
+      categoryData.current = params.data;
+      // 储存确定按钮类型
+      submit_button_type.value = params.type;
+      // 清空二级输入框
+      formLabelAlign.categoryNameSecond = "";
+
+      // 一级输入框
+      category_first_input.value = false; // 隐藏
+      category_first_input_disabled.value = true; // 禁用
+      // 二级输入框
+      category_second_input.value = true; // 显示
+      category_children_input_disabled.value = false; // 禁用解除
+      // 确定按钮
+      category_button_disabled.value = false;
+    };
+    // 删除按钮_子级
+    const buttonDeleteChildren = (id) => {
+      deleteCategoryFirst(id);
+    };
+    // 确定按钮_添加子级
+    const addChildrenCategoryFn = () => {
+      // 子级输入框为空时跳出
+      if (!formLabelAlign.categoryNameSecond) {
+        root.$message({
+          type: "error",
+          message: "子级分类名称不能为空！",
+        });
+        return false;
+      }
+      let requestData = {
+        categoryName: formLabelAlign.categoryNameSecond,
+        parentId: categoryData.current.id,
+      };
+      // 按钮加载中状态，加载中
+      submit_button_loading.value = true;
+      AddChildrenCategory(requestData)
+        .then((response) => {
+          let responseData = response.data;
+          root.$message({
+            type: "success",
+            message: responseData.message,
+          });
+          // 调用分类获取接口
+          getInfoCategoryAll();
+          // 清空子级输入框内容
+          formLabelAlign.categoryNameSecond = "";
+          // 按钮加载中状态，解除
+          submit_button_loading.value = false;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+    // 编辑按钮
+    const editCategory = (params) => {
+      category_first_input.value = true;
+      category_first_input_disabled.value = false;
+      category_second_input.value = false;
+      category_children_input_disabled.value = true;
+      category_button_disabled.value = false;
+
+      // 一级名称输入还原名称
+      formLabelAlign.categoryName = params.data.category_name;
+      // 暂存提交按钮的类型
+      submit_button_type.value = params.type;
+      // 储存当前数据对象
+      categoryData.current = params.data;
+    };
+    // 添加子级按钮
+    const buttonAddChildren = (params) => {
+      // 存储数据
+      categoryData.current = params.data;
+      // 同步显示一级分类输入框的值
+      formLabelAlign.categoryName = params.data.category_name;
+      // 确定按钮的类型
+      submit_button_type.value = params.type;
+
+      // 一级输入框，禁用
+      category_first_input_disabled.value = true;
+      // 二级输入框，显示
+      category_second_input.value = true;
+      // 二级输入框,禁用解除
+      category_children_input_disabled.value = false;
+      // 确定按钮，禁用解除
+      category_button_disabled.value = false;
+    };
+    // 删除一级数据
+    const deleteCategoryFirst = (categoryId) => {
+      deleteID.value = categoryId;
+      Comfirm({
+        msg: "是否删除所有已选中的信息?",
+        title: "提示",
+        fn: deleteCategoryFirstFn,
+        catchFn: () => {
+          // 清空暂存值
+          deleteID.value = "";
+        },
+      });
+    };
+    // 删除操作执行方法
+    const deleteCategoryFirstFn = () => {
+      DeleteCategory({ categoryId: deleteID.value })
+        .then((response) => {
+          // 更新界面
+          //   // 方法一
+          //   // es6，findIndex，找到下标是多少，效率和性能稍微比filter好点
+          //   let index = categoryData.item.findIndex((item) => item.id == deleteID.value);
+          //   // splice(起始位置_下标，删除的数量，新数据)，两个参数是删除，三个参数是替换/插入(先执行删除，再插入)
+          //   categoryData.item.splice(index, 1); // 删除数组指定元素
+
+          // 方法二
+          // es6，filter，进行数据过滤，留下符合要求的，适合数据量小的操作
+          // 待处理: 子级编辑按钮未处理界面更新,filter后children类目下是数组，且不能接filter或findIndex
+          //   let newData = categoryData.item.filter((item) => item.id != deleteID.value);
+          //   categoryData.item = newData;
+          // 暂采用请求接口的方式
+          getInfoCategoryAll();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     };
 
     /**
      * 生命周期
      */
     onMounted(() => {
-      getCategory();
+      // 方法二，vuex，异步，都在vuex内定义好，只需要下面一小段
+      // 方法一，vue3.0全局方法，需要watch
+      //   getInfoCategory();
+      getInfoCategoryAll();
     });
+    watch(
+      () => categoryItem.item,
+      (value) => {
+        categoryData.item = value;
+      }
+    );
 
     return {
       /* data */
+      submit_button_type,
       category_first_input,
       category_second_input,
-      submit_button_loading_flag,
+      submit_button_loading,
+      category_first_input_disabled,
+      category_children_input_disabled,
+      category_button_disabled,
+      deleteID,
       /* reactive */
       categoryData,
       formLabelAlign,
       /* methods */
       addFirst,
       commit,
-      getCategory,
+      buttonEditChildren,
+      buttonDeleteChildren,
+      AddFirstCategoryFn,
+      EditCategoryFn,
+      editCategory,
+      editCategoryFn,
+      buttonAddChildren,
+      deleteCategoryFirst,
+      deleteCategoryFirstFn,
     };
   },
 };
