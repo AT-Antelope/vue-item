@@ -393,10 +393,7 @@ export default {
     };
     // 获取标题_子传父_编辑弹窗
     const getTitle = (returnData) => {
-      console.log(returnData);
-      console.log(form_table.item);
       let data = form_table.item.filter((item) => item.id == returnData.id);
-      console.log(data);
       data[0].title = returnData.title;
     };
 

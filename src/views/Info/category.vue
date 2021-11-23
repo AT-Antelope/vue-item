@@ -61,7 +61,10 @@
                       "
                       >编辑</el-button
                     >
-                    <el-button size="mini" round @click="buttonDeleteChildren"
+                    <el-button
+                      size="mini"
+                      round
+                      @click="buttonDeleteChildren(childrenItem.id)"
                       >删除</el-button
                     >
                   </div>
@@ -200,7 +203,7 @@ export default {
               type: "success",
               message: data.message,
             });
-            /**
+            /**cs
              *添加后更新data
              * 两种方法:
              * 1.请求获取分类接口，缺点:浪费资源
@@ -288,7 +291,9 @@ export default {
       category_button_disabled.value = false;
     };
     // 删除按钮_子级
-    const buttonDeleteChildren = () => {};
+    const buttonDeleteChildren = (id) => {
+      deleteCategoryFirst(id);
+    };
     // 确定按钮_添加子级
     const addChildrenCategoryFn = () => {
       // 子级输入框为空时跳出
@@ -382,8 +387,11 @@ export default {
 
           // 方法二
           // es6，filter，进行数据过滤，留下符合要求的，适合数据量小的操作
-          let newData = categoryData.item.filter((item) => item.id != deleteID.value);
-          categoryData.item = newData;
+          // 待处理: 子级编辑按钮未处理界面更新,filter后children类目下是数组，且不能接filter或findIndex
+          //   let newData = categoryData.item.filter((item) => item.id != deleteID.value);
+          //   categoryData.item = newData;
+          // 暂采用请求接口的方式
+          getInfoCategoryAll();
         })
         .catch((error) => {
           console.log(error);

@@ -23,7 +23,7 @@ const routes = [
     meta: {
       name: "登录",
     },
-    component: () => import("../views/Login/index"),
+    component: () => import("../views/Login/index.vue"),
   },
   {
     path: "/console",
@@ -41,7 +41,7 @@ const routes = [
         meta: {
           name: "首页",
         },
-        component: () => import("../views/Console/index"),
+        component: () => import("../views/Console/index.vue"),
       },
     ],
   },
@@ -64,7 +64,7 @@ const routes = [
         meta: {
           name: "信息列表",
         },
-        component: () => import("../views/Info/index"),
+        component: () => import("../views/Info/index.vue"),
       },
       {
         path: "/infoCategory",
@@ -72,7 +72,7 @@ const routes = [
         meta: {
           name: "信息分类",
         },
-        component: () => import("../views/Info/category"),
+        component: () => import("../views/Info/category.vue"),
       },
     ],
   },
