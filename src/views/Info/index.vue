@@ -113,9 +113,11 @@
           <el-button type="success" size="mini" @click="buttonEditInfo(scope.row.id)"
             >编辑</el-button
           >
-          <router-link :to="{ name: 'InfoDetails' }" class="margin-left-10">
-            <el-button type="success" size="mini">编辑详情</el-button>
-          </router-link>
+          <!-- <router-link :to="{ name: 'InfoDetails' }" class="margin-left-10"> -->
+          <el-button type="success" size="mini" @click="buttonDetailsEdit(scope.row)"
+            >编辑详情</el-button
+          >
+          <!-- </router-link> -->
         </template>
       </el-table-column>
     </el-table>
@@ -307,6 +309,39 @@ export default {
       // 显示自定义组件
       dialog_info_edit_flag.value = true;
     };
+    // 编辑详情按钮
+    const buttonDetailsEdit = (data) => {
+      //   // 本在details.vue里，拿到外面来预先储存，否则刷新页面后由于没有值传进去，会把空值储存起来
+      //   // commit(同步)，dispatch(异步)
+      //   root.$store.commit("infoDetails/SET_ID", data.id);
+      //   root.$store.commit("infoDetails/SET_TITLE", data.title);
+      // 另一种储存方法(更高级)，在store里循环储存
+      root.$store.commit("infoDetails/UPDATE_STATE_VALUE", {
+        id: {
+          value: data.id,
+          sessionKey: "infoId",
+          session: true,
+        },
+        title: {
+          value: data.title,
+          sessionKey: "infoTitle",
+          session: true,
+        },
+      });
+
+      // 这种方法需要在路由配置里的path属性里，加上需要传的参数，如/:id/:title
+      //   root.$router.push({
+      //     path: `/infoDetails/${data.id}/${data.title}`,
+      //   });
+      // vuex 结合 HTML5本地储存，参数不显示，解决传参参数丢失
+      root.$router.push({
+        name: "InfoDetails",
+        params: {
+          id: data.id,
+          title: data.title,
+        },
+      });
+    };
     // 批量删除
     const deleteSelected = () => {
       if (!selectedItems.value || selectedItems.value.length == 0) {
@@ -438,6 +473,7 @@ export default {
       //   dialogClose,
       deleteItem,
       buttonEditInfo,
+      buttonDetailsEdit,
       deleteSelected,
       deleteSelectedFn,
       getTitle,

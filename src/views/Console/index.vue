@@ -25,7 +25,7 @@ export default {
     font-size: 3em;
     text-align: center;
     padding: 10px;
-    border: 4mm ridge rgba(gold, 0.8);
+    border: 4mm ridge rgba(#a0d57e, 0.8);
     h1 {
       /* 将背景裁剪成文字的前景色 */
       @include webkit(background-clip, text);

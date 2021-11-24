@@ -75,6 +75,7 @@ const routes = [
         component: () => import("../views/Info/category.vue"),
       },
       {
+        // path: "/infoDetails/:id/:title",
         path: "/infoDetails",
         name: "InfoDetails",
         hidden: true,
