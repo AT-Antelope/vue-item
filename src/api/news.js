@@ -148,3 +148,20 @@ export function AddChildrenCategory(data) {
     data,
   });
 }
+
+/**
+ * 七牛云token获取
+ * 秘钥accessKey，秘钥secretKey，空间名称buckety
+ * {
+    "ak":"woophX7ugZ1c1KJ15hfIITG04C6viIzww4guqo7E",
+    "sk":"FgTvVc5e2buBLuWjjtKF-qlcc2CzPBBaV5n7B-XD",
+    "buckety":"vue-item"
+    }
+ */
+export function QiniuToken(data) {
+  return service.request({
+    method: "post",
+    url: "/uploadImgToken/",
+    data,
+  });
+}

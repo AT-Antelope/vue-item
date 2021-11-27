@@ -1,5 +1,18 @@
 import { Promise } from "core-js";
-import { GetCategoryAll, GetList, DeleteInfo, EditInfo } from "@/api/news";
+import {
+  GetCategoryAll,
+  GetList,
+  DeleteInfo,
+  EditInfo,
+  QiniuToken,
+} from "@/api/news";
+const state = {
+  qiniuUrl: "http://r35ov7o36.hn-bkt.clouddn.com/",
+};
+
+const getters = {
+  qiniuUrl: (state) => state.qiniuUrl,
+};
 
 const actions = {
   // 分类获取
@@ -42,7 +55,19 @@ const actions = {
   // 信息修改
   editInfo(content, requestData) {
     return new Promise((resolve, reject) => {
-        EditInfo(requestData)
+      EditInfo(requestData)
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  // 七牛云Token获取
+  qiniuToken(content, requestData) {
+    return new Promise((resolve, reject) => {
+      QiniuToken(requestData)
         .then((response) => {
           resolve(response);
         })
@@ -54,5 +79,7 @@ const actions = {
 };
 export default {
   namespaced: true,
+  state,
+  getters,
   actions,
 };

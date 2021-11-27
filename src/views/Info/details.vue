@@ -16,39 +16,19 @@
     <el-form-item label="新闻标题:">
       <el-input v-model="form.title" class="inputTitle"></el-input>
     </el-form-item>
-    <!-- 缩略图 -->
+    <!-- 图片上传 -->
     <el-form-item label="缩略图:" label-position="right" label-width="71px">
-      <el-upload action="#" list-type="picture-card" :auto-upload="false">
-        <i slot="default" class="el-icon-plus"></i>
-        <div slot="file" slot-scope="{ file }">
-          <img class="el-upload-list__item-thumbnail" :src="file.url" alt="" />
-          <span class="el-upload-list__item-actions">
-            <span
-              class="el-upload-list__item-preview"
-              @click="thumbnailHandlePictureCardPreview(file)"
-            >
-              <i class="el-icon-zoom-in"></i>
-            </span>
-            <span
-              v-if="!form.disabled"
-              class="el-upload-list__item-delete"
-              @click="thumbnailHandleDownload(file)"
-            >
-              <i class="el-icon-download"></i>
-            </span>
-            <span
-              v-if="!form.disabled"
-              class="el-upload-list__item-delete"
-              @click="thumbnailHandleRemove(file)"
-            >
-              <i class="el-icon-delete"></i>
-            </span>
-          </span>
-        </div>
+      <el-upload
+        class="avatar-uploader"
+        action="http://up-z2.qiniup.com"
+        :data="data.uploadKey"
+        :show-file-list="false"
+        :before-upload="beforeAvatarUpload"
+        :on-success="handleAvatarSuccess"
+      >
+        <img v-if="form.imageUrl" :src="form.imageUrl" class="avatar" />
+        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
       </el-upload>
-      <el-dialog :visible.sync="form.dialogVisible">
-        <img width="100%" :src="form.dialogImageUrl" alt="" />
-      </el-dialog>
     </el-form-item>
     <!-- 发布日期 -->
     <el-form-item label="发布日期:">
@@ -77,7 +57,7 @@
       <el-button
         type="primary"
         @click="buttonSubmit"
-        :loading="form.submit_loading_flag.value"
+        :loading="data.submit_loading_flag.value"
         >保存</el-button
       >
     </el-form-item>
@@ -102,6 +82,12 @@ export default {
       category: [],
       // (第一次进入)从Info/index.vue里把id传进来，(刷新页面后)拿不到接收的值就从vuex获取
       id: root.$route.params.id || root.$store.getters["infoDetails/infoId"],
+      // 提交按钮加载中状态
+      submit_loading_flag: false,
+      uploadKey: {
+        token: "",
+        key: "",
+      },
     });
     // 要提交的数据
     const form = reactive({
@@ -138,10 +124,8 @@ export default {
       },
       createDate: "",
       date_picker_disabled: true,
-      // 缩略图
-      disabled: false,
-      dialogVisible: false,
-      dialogImageUrl: "",
+      // 图片上传
+      imageUrl: "",
       // 富文本文本框配置
       editorContent: "",
       editorOption: {
@@ -165,8 +149,6 @@ export default {
           ],
         },
       },
-      // 提交按钮加载中状态
-      submit_loading_flag: false,
     });
 
     /**
@@ -194,21 +176,59 @@ export default {
           form.title = responseData.title;
           form.createDate = timestampToTime(responseData.createDate);
           form.editorContent = responseData.content;
+          form.imageUrl = responseData.imgUrl;
         })
         .catch((error) => {
           console.log(error);
         });
     };
-    // 缩略图
-    const thumbnailHandlePictureCardPreview = (file) => {
-      form.dialogImageUrl = file.url;
-      form.dialogVisible = true;
+    // 图片上传
+    // ---选择文件后
+    const beforeAvatarUpload = (file) => {
+      const isJPG = file.type === "image/jpeg";
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isJPG) {
+        root.$message.error("上传头像图片只能是 JPG 格式!");
+      }
+      if (!isLt2M) {
+        root.$message.error("上传头像图片大小不能超过 2MB!");
+      }
+      // 文件名转码
+      let suffix = file.name;
+      let key = encodeURI(`${suffix}`);
+      data.uploadKey.key = key;
+
+      return isJPG && isLt2M;
     };
-    const thumbnailHandleDownload = (file) => {
-      console.log(file);
+    // ---上传成功后
+    const handleAvatarSuccess = (res, file) => {
+      /**
+       * res:{
+       *    hash:"...",
+       *    key:"..."
+       * }
+       */
+      form.imageUrl = `${root.$store.getters["common/qiniuUrl"]}${res.key}`;
+      //   form.imageUrl = URL.createObjectURL(file.raw);
     };
-    const thumbnailHandleRemove = (file) => {
-      console.log(file);
+    // 获取七牛云token
+    const getQiniuToken = () => {
+      let requestData = {
+        ak: "AXs9_jiNK_Fy4HyYRzujTuxFSm3x6V7M",
+        sk: "gUsR1ngTi08vf4f43p6A7U3B3wT3tvt-bVEW",
+        buckety: "vue-item",
+      };
+      root.$store
+        .dispatch("common/qiniuToken", requestData)
+        .then((response) => {
+          let responseData = response.data;
+          let token = responseData.data.token;
+          data.uploadKey.token = token;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     };
     // 确定按钮(提交)
     const buttonSubmit = () => {
@@ -221,7 +241,7 @@ export default {
         return false;
       }
       // 改变按钮状态为加载中
-      form.submit_loading_flag = true;
+      data.submit_loading_flag = true;
       // 请求参数
       let requestData = {
         id: data.id,
@@ -229,10 +249,9 @@ export default {
         title: form.title,
         content: form.editorContent,
         createDate: form.createDate,
-        imageUrl: form.dialogImageUrl,
+        imageUrl: form.imageUrl,
         // status: "",
       };
-      console.log(requestData);
       root.$store
         .dispatch("common/editInfo", requestData)
         .then((response) => {
@@ -242,12 +261,12 @@ export default {
             message: data.message,
           });
           // 取消按钮加载中状态
-          form.submit_loading_flag = false;
+          data.submit_loading_flag = false;
         })
         .catch((error) => {
           console.log(error);
           // 取消按钮加载中状态
-          form.submit_loading_flag = false;
+          data.submit_loading_flag = false;
         });
     };
 
@@ -263,17 +282,18 @@ export default {
       getInfoCategory();
       // 获取信息数据
       getInfo();
+      // 获取七牛云token
+      getQiniuToken();
     });
 
     return {
-      /* 表单 */
+      /* data */
       data,
       form,
       /* methods */
       buttonSubmit,
-      thumbnailHandlePictureCardPreview,
-      thumbnailHandleDownload,
-      thumbnailHandleRemove,
+      handleAvatarSuccess,
+      beforeAvatarUpload,
       getInfo,
     };
   },
@@ -290,5 +310,29 @@ export default {
       height: 300px;
     }
   }
+}
+/* 图片上传 */
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
 }
 </style>
