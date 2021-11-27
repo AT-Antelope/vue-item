@@ -18,17 +18,7 @@
     </el-form-item>
     <!-- 图片上传 -->
     <el-form-item label="缩略图:" label-position="right" label-width="71px">
-      <el-upload
-        class="avatar-uploader"
-        action="http://up-z2.qiniup.com"
-        :data="data.uploadKey"
-        :show-file-list="false"
-        :before-upload="beforeAvatarUpload"
-        :on-success="handleAvatarSuccess"
-      >
-        <img v-if="form.imageUrl" :src="form.imageUrl" class="avatar" />
-        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-      </el-upload>
+      <UploadImg :imageUrl="form.imageUrl" :uploadConfig.sync="uploadConfig" />
     </el-form-item>
     <!-- 发布日期 -->
     <el-form-item label="发布日期:">
@@ -66,6 +56,8 @@
 <script>
 import { timestampToTime } from "@/utils/common.js";
 import { reactive, onMounted } from "@vue/composition-api";
+// 组件
+import UploadImg from "@c/UploadImg";
 // 富文本编辑器
 import { quillEditor } from "vue-quill-editor";
 import "quill/dist/quill.core.css";
@@ -73,7 +65,7 @@ import "quill/dist/quill.snow.css";
 import "quill/dist/quill.bubble.css";
 export default {
   name: "infoDetails",
-  components: { quillEditor },
+  components: { quillEditor, UploadImg },
   setup(props, { root }) {
     /**
      * data
@@ -84,10 +76,6 @@ export default {
       id: root.$route.params.id || root.$store.getters["infoDetails/infoId"],
       // 提交按钮加载中状态
       submit_loading_flag: false,
-      uploadKey: {
-        token: "",
-        key: "",
-      },
     });
     // 要提交的数据
     const form = reactive({
@@ -122,10 +110,9 @@ export default {
           },
         ],
       },
+      imageUrl: "",
       createDate: "",
       date_picker_disabled: true,
-      // 图片上传
-      imageUrl: "",
       // 富文本文本框配置
       editorContent: "",
       editorOption: {
@@ -149,6 +136,13 @@ export default {
           ],
         },
       },
+    });
+    const uploadConfig = reactive({
+      // 图片上传
+      imageAction: "http://up-z2.qiniup.com", // getInfoCategory()内做了测试性暂时修改
+      accessKey: "AXs9_jiNK_Fy4HyYRzujTuxFSm3x6V7M",
+      secretKey: "gUsR1ngTi08vf4f43p6A7U3B3wT3tvt-bVEW",
+      buckety: "vue-item",
     });
 
     /**
@@ -176,60 +170,14 @@ export default {
           form.title = responseData.title;
           form.createDate = timestampToTime(responseData.createDate);
           form.editorContent = responseData.content;
-          form.imageUrl = responseData.imgUrl;
+          //   form.imageUrl = responseData.imgUrl;
+          form.imageUrl = "test.jpg";
         })
         .catch((error) => {
           console.log(error);
         });
     };
-    // 图片上传
-    // ---选择文件后
-    const beforeAvatarUpload = (file) => {
-      const isJPG = file.type === "image/jpeg";
-      const isLt2M = file.size / 1024 / 1024 < 2;
 
-      if (!isJPG) {
-        root.$message.error("上传头像图片只能是 JPG 格式!");
-      }
-      if (!isLt2M) {
-        root.$message.error("上传头像图片大小不能超过 2MB!");
-      }
-      // 文件名转码
-      let suffix = file.name;
-      let key = encodeURI(`${suffix}`);
-      data.uploadKey.key = key;
-
-      return isJPG && isLt2M;
-    };
-    // ---上传成功后
-    const handleAvatarSuccess = (res, file) => {
-      /**
-       * res:{
-       *    hash:"...",
-       *    key:"..."
-       * }
-       */
-      form.imageUrl = `${root.$store.getters["common/qiniuUrl"]}${res.key}`;
-      //   form.imageUrl = URL.createObjectURL(file.raw);
-    };
-    // 获取七牛云token
-    const getQiniuToken = () => {
-      let requestData = {
-        ak: "AXs9_jiNK_Fy4HyYRzujTuxFSm3x6V7M",
-        sk: "gUsR1ngTi08vf4f43p6A7U3B3wT3tvt-bVEW",
-        buckety: "vue-item",
-      };
-      root.$store
-        .dispatch("common/qiniuToken", requestData)
-        .then((response) => {
-          let responseData = response.data;
-          let token = responseData.data.token;
-          data.uploadKey.token = token;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    };
     // 确定按钮(提交)
     const buttonSubmit = () => {
       // 有输入框为空时，提示用户
@@ -282,18 +230,15 @@ export default {
       getInfoCategory();
       // 获取信息数据
       getInfo();
-      // 获取七牛云token
-      getQiniuToken();
     });
 
     return {
       /* data */
       data,
       form,
+      uploadConfig,
       /* methods */
       buttonSubmit,
-      handleAvatarSuccess,
-      beforeAvatarUpload,
       getInfo,
     };
   },

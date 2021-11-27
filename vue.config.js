@@ -28,8 +28,9 @@ module.exports = {
       alias: {
         vue: "vue/dist/vue.js", // 从runtime模式改为compiler模式，相当于3.0和2.0的区别
         "@": path.resolve(__dirname, "./src"),
+        "@c": path.resolve(__dirname, "./src/components"),
+        // components: path.resolve(__dirname, "./src/components"),
         public: path.resolve(__dirname, "./public"),
-        components: path.resolve(__dirname, "./src/components"),
         common: path.resolve(__dirname, "./src/common"),
         api: path.resolve(__dirname, "./src/api"),
         views: path.resolve(__dirname, "./src/views"),
