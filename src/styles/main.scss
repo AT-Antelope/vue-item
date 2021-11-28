@@ -13,3 +13,14 @@
 .black-space-30 {
   height: 30px;
 }
+
+// 循环，从1到110，例如: .margin-left-10{ margin-left: (1px * 10) }
+@for $i from 1 through 110 {
+  .margin-left-#{$i} {
+    margin-left: (1px * $i);
+  }
+}
+
+.button-color-black {
+  color: black !important;
+}
