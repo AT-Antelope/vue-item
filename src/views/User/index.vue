@@ -38,7 +38,9 @@ export default {
   setup(props, { root }) {
     const data = reactive({
       // 关键字下拉框
-      configOptions: ["userName", "name", "region"],
+      configOptions: {
+        waitForInitOptions: ["userName", "name", "region"],
+      },
       // 关键字输入框
       inputKeyword: "",
     });

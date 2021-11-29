@@ -12,14 +12,19 @@
 import { reactive, onMounted } from "@vue/composition-api";
 export default {
   /**
-   * 参数:
-   * "userName","name","phone","region","character"
+   * 组件目录: src/components/Select/index.vue
+   * 引用方式: import SelectKeyword from "@c/Select";
+   * template: <SelectKeyword :config="..." />
+   * 参数配置: {
+   *             config : ["userName","name","phone","region","character"]
+   *          }
+   * 
    */
   name: "selectKeyword",
   props: {
     config: {
-      type: Array,
-      default: () => [],
+      type: Object,
+      default: () => {},
     },
   },
   setup(props, { root }) {
@@ -40,12 +45,25 @@ export default {
 
     // 初始化下拉框数据
     let initOptions = () => {
+      let waitForInitOptions = props.config.waitForInitOptions;
+      // 数据检验
+      if (waitForInitOptions.length === 0) {
+        console.log("传进来的config的参数是空的，无法显示下拉菜单");
+        return false;
+      }
       // !!! 不要直接对数据绑定的值进行循环操作，否则每次改变都会进项一次重新渲染，影响性能
       let optionsArr = [];
-      props.config.forEach((item) => {
-        let arr = data.options.filter((filterItem) => filterItem.value == item)[0]; // filter匹配成功后是个数组，需要取下标
-        optionsArr.push(arr);
+      waitForInitOptions.forEach((item) => {
+        let arr = data.options.filter((filterItem) => filterItem.value == item); // filter匹配成功后是个数组，需要取下标
+        if (arr.length > 0) {
+          optionsArr.push(arr[0]);
+        }
       });
+      // 数据检验
+      if (optionsArr.length === 0) {
+        console.log("匹配的数据optionsArr为空");
+        return false;
+      }
       // 初始化赋值
       data.selectKeywordOptions = optionsArr;
       // 初始化搜索类型
