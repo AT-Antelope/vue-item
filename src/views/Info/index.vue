@@ -101,10 +101,10 @@
         prop="createDate"
         label="日期"
         :formatter="formatToDate"
-        width="237px"
+        width="217px"
       >
       </el-table-column>
-      <el-table-column prop="user" label="管理人" width="115px"> </el-table-column>
+      <el-table-column prop="user" label="管理人" width="100px"> </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button type="danger" size="mini" @click="deleteItem(scope.row)"

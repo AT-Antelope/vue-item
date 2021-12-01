@@ -5,6 +5,7 @@ import {
   DeleteInfo,
   EditInfo,
   QiniuToken,
+  LoadTableData,
 } from "@/api/news";
 const state = {
   qiniuUrl: "http://r35ov7o36.hn-bkt.clouddn.com/",
@@ -68,6 +69,18 @@ const actions = {
   qiniuToken(content, requestData) {
     return new Promise((resolve, reject) => {
       QiniuToken(requestData)
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  // 获取用户列表
+  loadTableData(content, requestData) {
+    return new Promise((resolve, reject) => {
+      LoadTableData(requestData)
         .then((response) => {
           resolve(response);
         })

@@ -46,6 +46,7 @@
   </div>
 </template>
 <script>
+import { apiRequestUrl } from "@/api/requestUrl.js";
 import TableComponent from "@c/Table";
 import SelectKeyword from "@c/Select";
 import { reactive } from "@vue/composition-api";
@@ -63,9 +64,9 @@ export default {
         selectionFlag: true,
         tableHeaderOptions: [
           { label: "邮箱/用户名", value: "email" },
-          { label: "真实姓名", value: "name" },
+          { label: "真实姓名", value: "truename" },
           { label: "手机号", value: "phone" },
-          { label: "地区", value: "address" },
+          { label: "地区", value: "region" },
           { label: "角色", value: "role" },
           {
             label: "禁启用状态",
@@ -75,6 +76,11 @@ export default {
           },
           { label: "操作", value: "operate", columnType: "slot", slotName: "buttons" },
         ],
+        requestData: {
+          url: apiRequestUrl.getUserList,
+          //   method: apiRequestUrl.requestMethod,
+          //   data: {},
+        },
       },
       // 关键字输入框
       inputKeyword: "",

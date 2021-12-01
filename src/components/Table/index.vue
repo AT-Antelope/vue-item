@@ -60,25 +60,25 @@ export default {
       tableData: [
         {
           email: "test@qq.com",
-          name: "王小虎",
+          truename: "王小虎",
           phone: 13312341234,
-          address: "上海市普陀区金沙江路 1518 弄",
+          region: "上海市普陀区金沙江路 1518 弄",
           role: "超管",
           switchFlag: false,
         },
         {
           email: "test222@qq.com",
-          name: "王小虎222",
+          truename: "王小虎222",
           phone: 13322222222,
-          address: "上海市普陀区金沙江路 2222 弄",
+          region: "上海市普陀区金沙江路 2222 弄",
           role: "普通观众",
           switchFlag: false,
         },
         {
           email: "test333@qq.com",
-          name: "王小虎333",
+          truename: "王小虎333",
           phone: 13333333333,
-          address: "上海市普陀区金沙江路 3333 弄",
+          region: "上海市普陀区金沙江路 3333 弄",
           role: "大佬",
           switchFlag: false,
         },
@@ -89,16 +89,40 @@ export default {
         selectionFlag: true,
         // 表头的列名
         tableHeaderOptions: [],
+        requestData: {},
       },
     });
 
+    // 初始化请求数据
+    let loadData = () => {
+      let requestJson = data.tableConfig.requestData;
+      let requestData = {
+        url: requestJson.url,
+        method: requestJson.method,
+        data: requestJson.data,
+      };
+      // 获取用户列表
+      root.$store
+        .dispatch("common/loadTableData", requestData)
+        .then((response) => {
+          let responseData = response.data.data.data;
+          // 数据检验
+          if (responseData && responseData.length > 0) {
+            data.tableData = responseData;
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
     // 初始化table配置项，处理从父组件传来的数据
-    const handlerDataFromParent = () => {
+    let handlerDataFromParent = () => {
       let configDatas = props.config;
+      let keys = Object.keys(data.tableConfig); // 将对象中的所有key提取成一个数组
       for (let key in configDatas) {
         // 数据检验
-        if (data.tableConfig[key]) {
-          // 出现
+        // 如果包含返回true
+        if (keys.includes(key)) {
           data.tableConfig[key] = configDatas[key];
         }
       }
@@ -110,6 +134,7 @@ export default {
     // 挂载前
     onBeforeMount(() => {
       handlerDataFromParent();
+      loadData();
     });
 
     return {
