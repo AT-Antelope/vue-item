@@ -58,8 +58,7 @@ export default {};
 .content {
   width: 100%;
   height: 100%;
-  padding-top: 30px;
-  padding-left: 30px;
+  padding: 30px 30px 0 30px;
   border: 30px solid #e9e9e9;
   border-bottom: none;
   @include webkit(box-sizing, border-box);
