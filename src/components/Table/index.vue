@@ -28,7 +28,9 @@
   </el-table>
 </template>
 <script>
-import { reactive, onBeforeMount } from "@vue/composition-api";
+import { recordPage } from "./recordPage.js";
+import { loadData } from "./tableLoadData.js";
+import { reactive, onBeforeMount, watch } from "@vue/composition-api";
 export default {
   /**
    * 组件目录: src/components/Table/index.vue
@@ -55,6 +57,8 @@ export default {
     },
   },
   setup(props, { root }) {
+    const { recordPage } = recordPage(); // 翻页记录
+    const { tableData, tableLoadData } = loadData(); // 加载表格数据
     const data = reactive({
       // table的数据
       tableData: [
@@ -93,30 +97,8 @@ export default {
       },
     });
 
-    // 初始化请求数据
-    let loadData = () => {
-      let requestJson = data.tableConfig.requestData;
-      let requestData = {
-        url: requestJson.url,
-        method: requestJson.method,
-        data: requestJson.data,
-      };
-      // 获取用户列表
-      root.$store
-        .dispatch("common/loadTableData", requestData)
-        .then((response) => {
-          let responseData = response.data.data.data;
-          // 数据检验
-          if (responseData && responseData.length > 0) {
-            data.tableData = responseData;
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    };
     // 初始化table配置项，处理从父组件传来的数据
-    let handlerDataFromParent = () => {
+    const handlerDataFromParent = () => {
       let configDatas = props.config;
       let keys = Object.keys(data.tableConfig); // 将对象中的所有key提取成一个数组
       for (let key in configDatas) {
@@ -131,10 +113,15 @@ export default {
     /**
      * life cycle
      */
+    // 监听数据数组是否改变，初始化为空，接口返回组件数据，发生改变后把组件内的数据数组，存到当前的数组中
+    watch(
+      () => tableData.item,
+      (newValue) => (data.tableData = newValue)
+    );
     // 挂载前
     onBeforeMount(() => {
       handlerDataFromParent();
-      loadData();
+      tableLoadData(data.tableConfig.requestData, root);
     });
 
     return {
