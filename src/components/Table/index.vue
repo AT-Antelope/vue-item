@@ -1,35 +1,51 @@
 <template>
-  <el-table :data="data.tableData" border style="width: 100%">
-    <!-- 多选框 -->
-    <el-table-column v-if="data.tableConfig.selectionFlag" type="selection" width="55">
-    </el-table-column>
+  <div>
+    <el-table :data="data.tableData" border style="width: 100%">
+      <!-- 多选框 -->
+      <el-table-column v-if="data.tableConfig.selectionFlag" type="selection" width="55">
+      </el-table-column>
 
-    <template v-for="tHeaderItem in data.tableConfig.tableHeaderOptions">
-      <!-- v-slot -->
-      <el-table-column
-        v-if="tHeaderItem.columnType === 'slot'"
-        :key="tHeaderItem.value"
-        :prop="tHeaderItem.value"
-        :label="tHeaderItem.label"
-      >
-        <template slot-scope="scope">
-          <slot :name="tHeaderItem.slotName" :data="scope.row"></slot>
-        </template>
-      </el-table-column>
-      <!-- 表头文本数据渲染 -->
-      <el-table-column
-        v-else
-        :key="tHeaderItem.value"
-        :prop="tHeaderItem.value"
-        :label="tHeaderItem.label"
-      >
-      </el-table-column>
-    </template>
-  </el-table>
+      <template v-for="tHeaderItem in data.tableConfig.tableHeaderOptions">
+        <!-- v-slot -->
+        <el-table-column
+          v-if="tHeaderItem.columnType === 'slot'"
+          :key="tHeaderItem.value"
+          :prop="tHeaderItem.value"
+          :label="tHeaderItem.label"
+        >
+          <template slot-scope="scope">
+            <slot :name="tHeaderItem.slotName" :data="scope.row"></slot>
+          </template>
+        </el-table-column>
+        <!-- 表头文本数据渲染 -->
+        <el-table-column
+          v-else
+          :key="tHeaderItem.value"
+          :prop="tHeaderItem.value"
+          :label="tHeaderItem.label"
+        >
+        </el-table-column>
+      </template>
+    </el-table>
+    <!-- 分页组件 -->
+    <el-pagination
+      v-if="data.tableConfig.paginationFlag"
+      background
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="pageData.currentPage"
+      :page-size="pageData.pageSize"
+      :page-sizes="pageData.pageSizes"
+      :layout="data.tableConfig.paginationLayout"
+      :total="pageData.pageTotal"
+      class="float-right"
+    >
+    </el-pagination>
+  </div>
 </template>
 <script>
-import { recordPage } from "./recordPage.js";
 import { loadData } from "./tableLoadData.js";
+import { pagination } from "./paginationHook.js";
 import { reactive, onBeforeMount, watch } from "@vue/composition-api";
 export default {
   /**
@@ -57,8 +73,13 @@ export default {
     },
   },
   setup(props, { root }) {
-    const { recordPage } = recordPage(); // 翻页记录
     const { tableData, tableLoadData } = loadData(); // 加载表格数据
+    const {
+      pageData,
+      pageTotalChanging,
+      handleSizeChange,
+      handleCurrentChange,
+    } = pagination(); // 分页组件
     const data = reactive({
       // table的数据
       tableData: [
@@ -93,7 +114,12 @@ export default {
         selectionFlag: true,
         // 表头的列名
         tableHeaderOptions: [],
+        // 用于请求配置和请求的参数
         requestData: {},
+        // 页码组件，是否显示
+        paginationFlag: true,
+        // 页码组件，显示的参数,"total, sizes, prev, pager, next, jumper"
+        paginationLayout: "total, sizes, prev, pager, next, jumper",
       },
     });
 
@@ -111,13 +137,31 @@ export default {
     };
 
     /**
+     * watch
+     * watch(() => item,(newValue,oldValue) => {})
+     */
+    // 数据渲染，监听数据数组是否改变，初始化为空，接口返回组件数据，发生改变后把组件内的数据数组，存到当前的数组中
+    watch([() => tableData.item, () => tableData.pageTotal], ([tableData, pageTotal]) => {
+      data.tableData = tableData;
+      pageTotalChanging(pageTotal);
+    });
+    // 页数监听
+    watch(
+      [() => pageData.pageSize, () => pageData.currentPage],
+      ([newPageSize, newCurrentPage]) => {
+        let requestData = data.tableConfig.requestData;
+        // 数据检验
+        if (requestData.data) {
+          requestData.data.pageNumber = newCurrentPage;
+          requestData.data.pageSize = newPageSize;
+          tableLoadData(requestData, root);
+        }
+      }
+    );
+
+    /**
      * life cycle
      */
-    // 监听数据数组是否改变，初始化为空，接口返回组件数据，发生改变后把组件内的数据数组，存到当前的数组中
-    watch(
-      () => tableData.item,
-      (newValue) => (data.tableData = newValue)
-    );
     // 挂载前
     onBeforeMount(() => {
       handlerDataFromParent();
@@ -127,6 +171,10 @@ export default {
     return {
       /* data */
       data,
+      pageData,
+      /* methods */
+      handleSizeChange,
+      handleCurrentChange,
     };
   },
 };

@@ -78,9 +78,15 @@ export default {
         ],
         requestData: {
           url: apiRequestUrl.getUserList,
-          //   method: apiRequestUrl.requestMethod,
-          //   data: {},
+          method: apiRequestUrl.requestMethod,
+          data: {
+            pageNumber: 1,
+            pageSize: 10,
+          },
         },
+        // 页码组件
+        paginationFlag: true, // 是否显示组件
+        paginationLayout: "total, sizes, prev, pager, next, jumper", // 显示的参数,"total, sizes, prev, pager, next, jumper"
       },
       // 关键字输入框
       inputKeyword: "",

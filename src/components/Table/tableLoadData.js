@@ -3,6 +3,7 @@ import { reactive } from "@vue/composition-api";
 export function loadData() {
   const tableData = reactive({
     item: [],
+    pageTotal: 0,
   });
   // 初始化请求数据
   const tableLoadData = (params, root) => {
@@ -19,6 +20,7 @@ export function loadData() {
         // 数据检验
         if (responseData && responseData.length > 0) {
           tableData.item = responseData;
+          tableData.pageTotal = response.data.data.total;
         }
       })
       .catch((error) => {

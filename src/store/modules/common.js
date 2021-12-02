@@ -5,8 +5,8 @@ import {
   DeleteInfo,
   EditInfo,
   QiniuToken,
-  LoadTableData,
 } from "@/api/news";
+import { LoadTableData } from "@/api/user";
 const state = {
   qiniuUrl: "http://r35ov7o36.hn-bkt.clouddn.com/",
 };
