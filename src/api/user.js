@@ -22,3 +22,30 @@ export function LoadTableData(params) {
     },
   });
 }
+
+/**
+ * 获取省市区街关联
+ * 参数：
+ *  省：{
+          type:"province",
+ *     }
+ *  市：{
+          type:"city",
+          province_code: String
+ *   }
+ *  区县：{
+            type:"area",
+            city_code: Number
+ *  }
+ *  街道：{
+            type:"street",
+            area_code: Number
+ *  }
+ */
+export function CityPicker(data) {
+  return service.request({
+    method: "post",
+    url: "/cityPicker/",
+    data,
+  });
+}

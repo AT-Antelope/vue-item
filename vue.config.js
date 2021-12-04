@@ -29,6 +29,7 @@ module.exports = {
         vue: "vue/dist/vue.js", // 从runtime模式改为compiler模式，相当于3.0和2.0的区别
         "@": path.resolve(__dirname, "./src"),
         "@c": path.resolve(__dirname, "./src/components"),
+        "@u": path.resolve(__dirname, "./src/utils"),
         // components: path.resolve(__dirname, "./src/components"),
         public: path.resolve(__dirname, "./public"),
         common: path.resolve(__dirname, "./src/common"),

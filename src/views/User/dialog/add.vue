@@ -5,36 +5,35 @@
       :visible.sync="dialog_info_add_flag"
       @close="closeDialog"
       @opened="openDialog"
-      width="580px"
+      width="630px"
     >
       <el-form :model="form" ref="addInfoForm">
-        <el-form-item label="类型:" :label-width="formLabelWidth">
-          <el-select
-            v-model="form.category"
-            placeholder="请选择"
-            @change="categorySelectChanged"
-          >
-            <el-option
-              v-for="item in categoryOptions.item"
-              :key="item.id"
-              :label="item.category_name"
-              :value="item.id"
-            ></el-option>
-          </el-select>
+        <!-- 用户名 -->
+        <el-form-item label="用户名:" :label-width="formLabelWidth">
+          <el-input v-model="form.userName" placeholder="请输入内容"></el-input>
         </el-form-item>
-        <el-form-item label="标题:" :label-width="formLabelWidth">
-          <el-input v-model="form.title" placeholder="请输入内容"></el-input>
+        <!-- 姓名 -->
+        <el-form-item label="姓名:" :label-width="formLabelWidth">
+          <el-input v-model="form.truename" placeholder="请输入内容"></el-input>
         </el-form-item>
-        <el-form-item label="概况:" :label-width="formLabelWidth">
-          <el-input
-            type="textarea"
-            :rows="5"
-            placeholder="请输入内容"
-            v-model="form.content"
-          >
-          </el-input>
+        <!-- 手机号 -->
+        <el-form-item label="手机号:" :label-width="formLabelWidth">
+          <el-input v-model="form.phone" placeholder="请输入内容"> </el-input>
+        </el-form-item>
+        <!-- 地区 -->
+        <el-form-item label="地区:" :label-width="formLabelWidth">
+          <CityPicker :cityPickerDatas.sync="data.cityPickerDatas" />
+        </el-form-item>
+        <!-- 是否启用 -->
+        <el-form-item label="是否启用:" :label-width="formLabelWidth">
+          <el-input v-model="form.phone" placeholder="请输入内容"> </el-input>
+        </el-form-item>
+        <!-- 角色 -->
+        <el-form-item label="角色:" :label-width="formLabelWidth">
+          <el-input v-model="form.phone" placeholder="请输入内容"> </el-input>
         </el-form-item>
       </el-form>
+      <!-- 底部按钮 -->
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDialog">取消</el-button>
         <el-button type="danger" :loading="submit_loading_flag" @click="submit"
@@ -46,6 +45,7 @@
 </template>
 
 <script>
+import CityPicker from "@c/cityPicker";
 import { AddInfo } from "@/api/news";
 import { ref, reactive, watchEffect } from "@vue/composition-api";
 export default {
@@ -56,6 +56,7 @@ export default {
    *      category：对应的分类类别
    */
   name: "dialogInfo",
+  components: { CityPicker },
   props: {
     //   单项数据流，父传子，不能反向修改数据，使用watch监听可以实现
     openFlag: {
@@ -71,18 +72,21 @@ export default {
     /**
      * data
      */
+    const data = reactive({
+      cityPickerDatas: "",
+    });
     // 新增会话框的显示flag
     const dialog_info_add_flag = ref(false); // 实际上使用.sync修饰器后子组件内的初始值并没有效果
     // 标识label宽度
-    const formLabelWidth = ref("70px");
+    const formLabelWidth = ref("90px");
     // 确定按钮的是否加载中状态
     const submit_loading_flag = ref(false);
 
     // 表单内数据model
     const form = reactive({
-      category: "",
-      title: "",
-      content: "",
+      userName: "",
+      truename: "",
+      phone: "",
     });
     // 从父组件接收到的分类数据
     const categoryOptions = reactive({

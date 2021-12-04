@@ -6,7 +6,7 @@ import {
   EditInfo,
   QiniuToken,
 } from "@/api/news";
-import { LoadTableData } from "@/api/user";
+import { LoadTableData, CityPicker } from "@/api/user";
 const state = {
   qiniuUrl: "http://r35ov7o36.hn-bkt.clouddn.com/",
 };
@@ -81,6 +81,18 @@ const actions = {
   loadTableData(content, requestData) {
     return new Promise((resolve, reject) => {
       LoadTableData(requestData)
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  // 省市地区获取
+  cityPicker(content, requestData) {
+    return new Promise((resolve, reject) => {
+      CityPicker(requestData)
         .then((response) => {
           resolve(response);
         })

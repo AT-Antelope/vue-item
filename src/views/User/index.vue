@@ -24,7 +24,13 @@
         </div>
       </el-col>
       <el-col :span="4">
-        <el-button type="danger" size="small" class="float-right">新增</el-button>
+        <el-button
+          type="danger"
+          size="small"
+          class="float-right"
+          @click="data.openFlag = true"
+          >新增</el-button
+        >
       </el-col>
     </el-row>
     <TableComponent :config="data.configTable">
@@ -43,16 +49,19 @@
         >
       </template>
     </TableComponent>
+    <!-- dialog组件 -->
+    <DialogUserAdd :openFlag.sync="data.openFlag" />
   </div>
 </template>
 <script>
+import DialogUserAdd from "./dialog/add";
 import { apiRequestUrl } from "@/api/requestUrl.js";
 import TableComponent from "@c/Table";
 import SelectKeyword from "@c/Select";
 import { reactive } from "@vue/composition-api";
 export default {
   name: "userIndex",
-  components: { SelectKeyword, TableComponent },
+  components: { SelectKeyword, TableComponent, DialogUserAdd },
   setup(props, { root }) {
     const data = reactive({
       // 关键字下拉框配置项
@@ -92,6 +101,8 @@ export default {
       inputKeyword: "",
       // 开关值
       switchFlag: false,
+      // dialog组件，显示flag
+      openFlag: false,
     });
 
     /**
