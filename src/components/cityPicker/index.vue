@@ -47,7 +47,10 @@
       </el-col>
       <!-- 街道 -->
       <el-col :span="6">
-        <el-select v-model="cityPickerForm.selectStreet" placeholder="请选择"
+        <el-select
+          v-model="cityPickerForm.selectStreet"
+          placeholder="请选择"
+          @change="selectHandlerStreet"
           ><el-option
             v-for="streetItem in cityPickerData.streetData"
             :key="streetItem.STREET_ID"
@@ -61,7 +64,7 @@
 </template>
 <script>
 import { cityPicker } from "@/mixin/cityPicker.js";
-import { reactive, onMounted } from "@vue/composition-api";
+import { reactive, onMounted, watch } from "@vue/composition-api";
 export default {
   name: "cityPicker",
   props: {
@@ -70,24 +73,41 @@ export default {
       default: () => {},
     },
   },
-  setup(props, { root }) {
+  setup(props, { root, emit }) {
     const {
       cityPickerData,
       cityPickerForm,
+      resultData,
       getProvince,
       selectHandlerProvince,
       selectHandlerCity,
       selectHandlerArea,
+      selectHandlerStreet,
     } = cityPicker();
     /**
      * data
      */
 
     /**
+     * watch
+     */
+    watch(
+      [
+        () => resultData.selectProvince,
+        () => resultData.selectCity,
+        () => resultData.selectArea,
+        () => resultData.selectStreet,
+      ],
+      ([resultProvince, resultCity, resultArea, resultStreet]) => {
+        emit("update:cityPickerDatas", resultData);
+      }
+    );
+
+    /**
      * life cycle
      */
     onMounted(() => {
-      getProvince(root);
+      getProvince();
     });
 
     return {
@@ -100,6 +120,7 @@ export default {
       selectHandlerProvince,
       selectHandlerCity,
       selectHandlerArea,
+      selectHandlerStreet,
     };
   },
 };

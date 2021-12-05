@@ -22,7 +22,7 @@
         </el-form-item>
         <!-- 地区 -->
         <el-form-item label="地区:" :label-width="formLabelWidth">
-          <CityPicker :cityPickerDatas.sync="data.cityPickerDatas" />
+          <CityPicker :cityPickerDatas.sync="data.cityPickerResults" />
         </el-form-item>
         <!-- 是否启用 -->
         <el-form-item label="是否启用:" :label-width="formLabelWidth">
@@ -47,7 +47,7 @@
 <script>
 import CityPicker from "@c/cityPicker";
 import { AddInfo } from "@/api/news";
-import { ref, reactive, watchEffect } from "@vue/composition-api";
+import { ref, reactive, watch, watchEffect } from "@vue/composition-api";
 export default {
   /**
    * element弹窗组件
@@ -72,9 +72,6 @@ export default {
     /**
      * data
      */
-    const data = reactive({
-      cityPickerDatas: "",
-    });
     // 新增会话框的显示flag
     const dialog_info_add_flag = ref(false); // 实际上使用.sync修饰器后子组件内的初始值并没有效果
     // 标识label宽度
@@ -82,6 +79,9 @@ export default {
     // 确定按钮的是否加载中状态
     const submit_loading_flag = ref(false);
 
+    const data = reactive({
+      cityPickerResults: {},
+    });
     // 表单内数据model
     const form = reactive({
       userName: "",
@@ -179,6 +179,18 @@ export default {
       // 接收父组件传来的值
       dialog_info_add_flag.value = props.openFlag;
     });
+    // 监听时，貌似只能监听当前对象内第一层的值变化，内部key的value变化时并不会执行，不知道为什么
+    watch(
+      [
+        () => data.cityPickerResults.selectProvince,
+        () => data.cityPickerResults.selectCity,
+        () => data.cityPickerResults.selectArea,
+        () => data.cityPickerResults.selectStreet,
+      ],
+      ([resultProvince, resultCity, resultArea, resultStreet]) => {
+        console.log(data.cityPickerResults);
+      }
+    );
 
     return {
       /* ref */
@@ -186,6 +198,7 @@ export default {
       formLabelWidth,
       submit_loading_flag,
       /* reactive */
+      data,
       form,
       categoryOptions,
       /* methods */
