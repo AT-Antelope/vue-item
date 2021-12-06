@@ -22,15 +22,23 @@
         </el-form-item>
         <!-- 地区 -->
         <el-form-item label="地区:" :label-width="formLabelWidth">
-          <CityPicker :cityPickerDatas.sync="data.cityPickerResults" />
+          <CityPicker
+            :cityPickerInit="data.cityPickerInitDatas"
+            :cityPickerDatas.sync="data.cityPickerResults"
+          />
         </el-form-item>
         <!-- 是否启用 -->
         <el-form-item label="是否启用:" :label-width="formLabelWidth">
-          <el-input v-model="form.phone" placeholder="请输入内容"> </el-input>
+          <el-radio v-model="data.radioStatus" label="disabled">禁用</el-radio>
+          <el-radio v-model="data.radioStatus" label="abled">启用</el-radio>
         </el-form-item>
-        <!-- 角色 -->
+        <!-- 角色权限 -->
         <el-form-item label="角色:" :label-width="formLabelWidth">
-          <el-input v-model="form.phone" placeholder="请输入内容"> </el-input>
+          <el-checkbox-group v-model="data.checkListRole">
+            <el-checkbox label="系统管理员"></el-checkbox>
+            <el-checkbox label="信息管理员"></el-checkbox>
+            <el-checkbox label="用户管理员"></el-checkbox>
+          </el-checkbox-group>
         </el-form-item>
       </el-form>
       <!-- 底部按钮 -->
@@ -80,7 +88,14 @@ export default {
     const submit_loading_flag = ref(false);
 
     const data = reactive({
+      // 初始化省市区街组件显示的显示个数
+      cityPickerInitDatas: [], //["province", "city", "area", "street"]
+      // 接收返回出来的结果值
       cityPickerResults: {},
+      // 禁启用radio，单选值
+      radioStatus: "disabled",
+      // 角色，checkList的绑定值
+      checkListRole: [],
     });
     // 表单内数据model
     const form = reactive({
@@ -97,7 +112,7 @@ export default {
     /**
      * methods
      */
-    // 关闭新增对话框，并在@close返回给父组件
+    // 弹窗关闭事件，关闭新增对话框，并在@close返回给父组件
     const closeDialog = () => {
       // 关闭对话框时，将本组件的dialog_info_add_flag值修改为false
       dialog_info_add_flag.value = false;
@@ -108,7 +123,7 @@ export default {
       emit("update:openFlag", false);
       resetForm();
     };
-    // 点击新增按钮时把接收父组件的数据存储起来
+    // 弹窗打开事件，点击新增按钮时把接收父组件的数据存储起来
     const openDialog = () => {
       categoryOptions.item = props.category;
     };
@@ -179,18 +194,19 @@ export default {
       // 接收父组件传来的值
       dialog_info_add_flag.value = props.openFlag;
     });
+    // 监听cityPickerResults值是否返回成功
     // 监听时，貌似只能监听当前对象内第一层的值变化，内部key的value变化时并不会执行，不知道为什么
-    watch(
-      [
-        () => data.cityPickerResults.selectProvince,
-        () => data.cityPickerResults.selectCity,
-        () => data.cityPickerResults.selectArea,
-        () => data.cityPickerResults.selectStreet,
-      ],
-      ([resultProvince, resultCity, resultArea, resultStreet]) => {
-        console.log(data.cityPickerResults);
-      }
-    );
+    // // watch(
+    // //   [
+    // //     () => data.cityPickerResults.selectProvince,
+    // //     () => data.cityPickerResults.selectCity,
+    // //     () => data.cityPickerResults.selectArea,
+    // //     () => data.cityPickerResults.selectStreet,
+    // //   ],
+    // //   ([resultProvince, resultCity, resultArea, resultStreet]) => {
+    // //     console.log(data.cityPickerResults);
+    // //   }
+    // // );
 
     return {
       /* ref */
