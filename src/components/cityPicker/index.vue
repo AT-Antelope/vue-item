@@ -133,6 +133,7 @@ export default {
     /**
      * watch
      */
+    // 监听时，貌似只能监听当前对象内第一层的值变化，内部key的value变化时并不会执行，不知道为什么
     watch(
       [
         () => resultData.selectProvince,

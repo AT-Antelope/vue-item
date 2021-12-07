@@ -49,3 +49,24 @@ export function CityPicker(data) {
     data,
   });
 }
+
+/**
+ * 用户添加
+ * 参数:{
+            username: String,
+            truename: String,
+            password: String,
+            phone: Number,
+            region: String,
+            status: String,
+            role: String,
+            btnPerm: String,
+ *      }
+ */
+export function UserAdd(data) {
+  return service.request({
+    method: "post",
+    url: "/user/add/",
+    data,
+  });
+}

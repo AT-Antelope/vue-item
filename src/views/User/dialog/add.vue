@@ -9,35 +9,39 @@
     >
       <el-form :model="form" ref="addInfoForm">
         <!-- 用户名 -->
-        <el-form-item label="用户名:" :label-width="formLabelWidth">
-          <el-input v-model="form.userName" placeholder="请输入内容"></el-input>
+        <el-form-item label="用户名:" :label-width="formLabelWidth" prop="username">
+          <el-input v-model="form.username" placeholder="请输入邮箱"></el-input>
         </el-form-item>
         <!-- 姓名 -->
-        <el-form-item label="姓名:" :label-width="formLabelWidth">
-          <el-input v-model="form.truename" placeholder="请输入内容"></el-input>
+        <el-form-item label="姓名:" :label-width="formLabelWidth" prop="truename">
+          <el-input v-model="form.truename" placeholder="请输入姓名"></el-input>
+        </el-form-item>
+        <!-- 密码 -->
+        <el-form-item label="密码:" :label-width="formLabelWidth" prop="password">
+          <el-input v-model="form.password" placeholder="请输入密码"></el-input>
         </el-form-item>
         <!-- 手机号 -->
-        <el-form-item label="手机号:" :label-width="formLabelWidth">
-          <el-input v-model="form.phone" placeholder="请输入内容"> </el-input>
+        <el-form-item label="手机号:" :label-width="formLabelWidth" prop="phone">
+          <el-input v-model.number="form.phone" placeholder="请输入手机号"> </el-input>
         </el-form-item>
         <!-- 地区 -->
-        <el-form-item label="地区:" :label-width="formLabelWidth">
+        <el-form-item label="地区:" :label-width="formLabelWidth" prop="region">
           <CityPicker
             :cityPickerInit="data.cityPickerInitDatas"
             :cityPickerDatas.sync="data.cityPickerResults"
           />
         </el-form-item>
         <!-- 是否启用 -->
-        <el-form-item label="是否启用:" :label-width="formLabelWidth">
-          <el-radio v-model="data.radioStatus" label="disabled">禁用</el-radio>
-          <el-radio v-model="data.radioStatus" label="abled">启用</el-radio>
+        <el-form-item label="是否启用:" :label-width="formLabelWidth" prop="status">
+          <el-radio v-model="form.status" label="0">禁用</el-radio>
+          <el-radio v-model="form.status" label="1">启用</el-radio>
         </el-form-item>
         <!-- 角色权限 -->
-        <el-form-item label="角色:" :label-width="formLabelWidth">
-          <el-checkbox-group v-model="data.checkListRole">
-            <el-checkbox label="系统管理员"></el-checkbox>
-            <el-checkbox label="信息管理员"></el-checkbox>
-            <el-checkbox label="用户管理员"></el-checkbox>
+        <el-form-item label="角色权限:" :label-width="formLabelWidth" prop="role">
+          <el-checkbox-group v-model="form.role">
+            <!-- <el-checkbox label="系统管理员"></el-checkbox>-->
+            <el-checkbox label="infoSystem">信息管理员</el-checkbox>
+            <el-checkbox label="userSystem">用户管理员</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
       </el-form>
@@ -76,7 +80,7 @@ export default {
       default: () => [],
     },
   },
-  setup(props, { root, emit }) {
+  setup(props, { root, emit, refs }) {
     /**
      * data
      */
@@ -92,16 +96,16 @@ export default {
       cityPickerInitDatas: [], //["province", "city", "area", "street"]
       // 接收返回出来的结果值
       cityPickerResults: {},
-      // 禁启用radio，单选值
-      radioStatus: "disabled",
-      // 角色，checkList的绑定值
-      checkListRole: [],
     });
     // 表单内数据model
     const form = reactive({
-      userName: "",
-      truename: "",
-      phone: "",
+      username: "123@qq.com", // 用户名
+      truename: "RWD", // 真实姓名
+      password: "123", // 密码
+      phone: 123222333, // 手机号
+      region: "", // 地区
+      status: "0", // 禁启用radio，单选值
+      role: [], // 角色，checkList的绑定值
     });
     // 从父组件接收到的分类数据
     const categoryOptions = reactive({
@@ -116,12 +120,7 @@ export default {
     const closeDialog = () => {
       // 关闭对话框时，将本组件的dialog_info_add_flag值修改为false
       dialog_info_add_flag.value = false;
-      //   //   返回给父组件的值
-      //   this.$emit("closeFlag", false);
-      //   更简单的方法，直接使用.sync修饰器，将子传父的值绑定
-      //   this.$emit 相当于　解构后的emit
       emit("update:openFlag", false);
-      resetForm();
     };
     // 弹窗打开事件，点击新增按钮时把接收父组件的数据存储起来
     const openDialog = () => {
@@ -134,79 +133,76 @@ export default {
     };
     // 提交按钮
     const submit = () => {
-      // 有输入框为空时，提示用户
-      if (form.title == "" || form.content == "") {
-        root.$message({
-          type: "error",
-          message: "标题、类型不能为空！",
-        });
-        return false;
-      }
-      // 改变按钮状态为加载中
-      submit_loading_flag.value = true;
-      let data = {
-        category_id: categoryOptions.current.id,
-        title: form.title,
-        content: form.content,
-        // create_date: "2021-06-25 16:39:38",
-        // image_url: "http://qv18xxim7.hn-bkt.clouddn.com/1-7.jpg",
-        // status: "1",
-      };
-      AddInfo(data)
+      formValidate();
+      /**
+       * 深拷贝,(注意：对象会丢失)
+       *  JSON.parse(JSON.stringify(data.form)) // 输出字符串，再次转json对象
+       * 浅拷贝
+       *  Object.assign({}, data.form) // 拷贝出来的就是一个对象
+       */
+      // JSON的方法是深拷贝，否则浅拷贝的对象引用，会使界面上绑定的值类型变化，导致界面的值绑定失败
+      //   let requestData = JSON.parse(JSON.stringify(form));
+      let requestData = Object.assign({}, form);
+      requestData.region = JSON.stringify(requestData.region);
+      requestData.role = requestData.role.join();
+      console.log(requestData);
+      root.$store
+        .dispatch("common/userAdd", requestData)
         .then((response) => {
-          let data = response.data;
-          root.$message({
-            type: "success",
-            message: data.message,
-          });
-          // 取消按钮加载中状态
-          submit_loading_flag.value = false;
+          root.$message.success(response.data.message);
           resetForm();
-          // 成功后关闭新增页面
-          emit("update:openFlag", false);
         })
         .catch((error) => {
           console.log(error);
-          // 取消按钮加载中状态
-          submit_loading_flag.value = false;
+          resetForm();
         });
     };
-    // 清除表单，element-ui的resetFields()无效，采用传统方法
+    // 表单验证
+    const formValidate = () => {
+      if (!form.username) {
+        root.$message({
+          type: "error",
+          message: "用户名不能为空！",
+        });
+        return false;
+      }
+      if (!form.password) {
+        root.$message({
+          type: "error",
+          message: "密码不能为空！",
+        });
+        return false;
+      }
+      if (form.role.length === 0) {
+        root.$message({
+          type: "error",
+          message: "角色权限不能为空！",
+        });
+        return false;
+      }
+    };
+    // 清除表单
     const resetForm = () => {
-      // 清除分类选择器
-      form.category = "";
-      form.title = "";
-      form.content = "";
+      data.cityPickerResults = {};
+      // 清除表单
+      //   refs.addInfoForm.resetFeilds();
     };
 
     /**
      * watch
      */
-    //   watch: {   // vue2.0
-    //     openFlag: {
-    //       // 接收父组件传来的值
-    //       handler(newValue, oldValue) {
-    //         this.dialog_info_add_flag = newValue;
-    //       },
-    //     },
-    //   },
+    // 监听是否显示dialog组件
     watchEffect(() => {
       // 接收父组件传来的值
       dialog_info_add_flag.value = props.openFlag;
     });
-    // 监听cityPickerResults值是否返回成功
-    // 监听时，貌似只能监听当前对象内第一层的值变化，内部key的value变化时并不会执行，不知道为什么
-    // // watch(
-    // //   [
-    // //     () => data.cityPickerResults.selectProvince,
-    // //     () => data.cityPickerResults.selectCity,
-    // //     () => data.cityPickerResults.selectArea,
-    // //     () => data.cityPickerResults.selectStreet,
-    // //   ],
-    // //   ([resultProvince, resultCity, resultArea, resultStreet]) => {
-    // //     console.log(data.cityPickerResults);
-    // //   }
-    // // );
+    // CityPicker组件返回有值时储存结果
+    watch(
+      () => data.cityPickerResults,
+      (newValue) => {
+        form.region = newValue;
+      }
+    );
 
     return {
       /* ref */
@@ -222,7 +218,6 @@ export default {
       openDialog,
       categorySelectChanged,
       submit,
-      resetForm,
     };
   },
 };
