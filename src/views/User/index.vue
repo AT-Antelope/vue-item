@@ -33,10 +33,17 @@
         >
       </el-col>
     </el-row>
-    <TableComponent :config="data.configTable">
+    <TableComponent
+      ref="userTable"
+      :config="data.configTable"
+      :tableRowData.sync="data.tableRowDatas"
+    >
+      <!-- 插槽 -->
       <template v-slot:status="slotData">
         <el-switch
-          v-model="slotData.data.switchFlag"
+          v-model="slotData.data.status"
+          active-value="1"
+          inactive-value="0"
           active-color="#13ce66"
           inactive-color="#ff4949"
         >
@@ -48,12 +55,17 @@
           >管理</el-button
         >
       </template>
+      <template v-slot:tableFooterLeft>
+        <el-button size="mini" @click="btnDeleteSelected">批量删除</el-button>
+      </template>
+      <!-- /插槽 -->
     </TableComponent>
     <!-- dialog组件 -->
     <DialogUserAdd :openFlag.sync="data.openFlag" />
   </div>
 </template>
 <script>
+import { global } from "@/utils/global.js";
 import DialogUserAdd from "./dialog/add";
 import { apiRequestUrl } from "@/api/requestUrl.js";
 import TableComponent from "@c/Table";
@@ -62,17 +74,22 @@ import { reactive } from "@vue/composition-api";
 export default {
   name: "userIndex",
   components: { SelectKeyword, TableComponent, DialogUserAdd },
-  setup(props, { root }) {
+  setup(props, { root, refs }) {
+    const { Comfirm } = global();
     const data = reactive({
+      // 储存当前操作的对象值
+      userCurrentDatas: {},
       // 关键字下拉框配置项
       configOptions: {
         waitForInitOptions: ["userName", "name", "region"],
       },
+      // 用于接收table表格的当前行数据
+      tableRowDatas: {},
       // 表格配置项
       configTable: {
         selectionFlag: true,
         tableHeaderOptions: [
-          { label: "邮箱/用户名", value: "email" },
+          { label: "邮箱/用户名", value: "username" },
           { label: "真实姓名", value: "truename" },
           { label: "手机号", value: "phone" },
           { label: "地区", value: "region" },
@@ -110,10 +127,65 @@ export default {
      */
     // 删除按钮
     const btnDelete = (slotData) => {
+      data.userCurrentDatas = slotData.data;
+      // 确认弹窗
+      Comfirm({
+        msg: "是否确认删除用户？确认后将无法恢复!",
+        title: "警告",
+        fn: deleteFn,
+        catchFn: () => {},
+      });
+    };
+    // 删除按钮，确认执行方法
+    const deleteFn = () => {
+      let requestData = { id: Array.of(data.userCurrentDatas.id) };
+      root.$store
+        .dispatch("common/userDelete", requestData)
+        .then((response) => {
+          root.$message.success(response.data.message);
+          // 组件通讯，通过table组件的ref值，来调用组件内的方法
+          refs.userTable.tableRefreshData();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+    // 编辑按钮
+    const btnManage = (slotData) => {
+      data.userCurrentDatas = slotData.data;
       console.log(slotData);
     };
-    const btnManage = (slotData) => {
-      console.log(slotData);
+    // 批量删除按钮
+    const btnDeleteSelected = () => {
+      let selectedID = data.tableRowDatas.id;
+      // 没有选中的id时提示，第一次没选之前，tableRowDatas里没有key为id，选之后才有
+      if (!selectedID || selectedID.length === 0) {
+        root.$message.error("请勾选需要删除的用户!");
+        return false;
+      }
+      // 确认弹窗
+      Comfirm({
+        msg: "是否确认删除选中的用户？确认后将无法恢复!",
+        title: "警告",
+        fn: deleteSelectedFn,
+        catchFn: () => {},
+      });
+    };
+    // 批量删除，确认执行方法
+    const deleteSelectedFn = () => {
+      let requestData = {
+        id: data.tableRowDatas.id,
+      };
+      root.$store
+        .dispatch("common/userDelete", requestData)
+        .then((response) => {
+          root.$message.success(response.data.message);
+          // 组件通讯，通过table组件的ref值，来调用组件内的方法
+          refs.userTable.tableRefreshData();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     };
 
     return {
@@ -122,6 +194,7 @@ export default {
       /* methods */
       btnDelete,
       btnManage,
+      btnDeleteSelected,
     };
   },
 };

@@ -1,10 +1,14 @@
 <template>
-  <div>
-    <el-table :data="data.tableData" border style="width: 100%">
+  <div class="table-wrap">
+    <el-table
+      :data="data.tableData"
+      border
+      style="width: 100%"
+      @selection-change="tableSelectionChanged"
+    >
       <!-- 多选框 -->
       <el-table-column v-if="data.tableConfig.selectionFlag" type="selection" width="55">
       </el-table-column>
-
       <template v-for="tHeaderItem in data.tableConfig.tableHeaderOptions">
         <!-- v-slot -->
         <el-table-column
@@ -27,20 +31,29 @@
         </el-table-column>
       </template>
     </el-table>
-    <!-- 分页组件 -->
-    <el-pagination
-      v-if="data.tableConfig.paginationFlag"
-      background
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      :current-page="pageData.currentPage"
-      :page-size="pageData.pageSize"
-      :page-sizes="pageData.pageSizes"
-      :layout="data.tableConfig.paginationLayout"
-      :total="pageData.pageTotal"
-      class="float-right"
-    >
-    </el-pagination>
+    <div class="table-footer">
+      <el-row>
+        <el-col :span="4">
+          <slot name="tableFooterLeft"></slot>
+        </el-col>
+        <el-col :span="20">
+          <!-- 分页组件 -->
+          <el-pagination
+            v-if="data.tableConfig.paginationFlag"
+            background
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="pageData.currentPage"
+            :page-size="pageData.pageSize"
+            :page-sizes="pageData.pageSizes"
+            :layout="data.tableConfig.paginationLayout"
+            :total="pageData.pageTotal"
+            class="float-right"
+          >
+          </el-pagination
+        ></el-col>
+      </el-row>
+    </div>
   </div>
 </template>
 <script>
@@ -71,8 +84,12 @@ export default {
       type: Object,
       default: () => {},
     },
+    tableRowData: {
+      type: Object,
+      default: () => {},
+    },
   },
-  setup(props, { root }) {
+  setup(props, { root, emit }) {
     const { tableData, tableLoadData } = loadData(); // 加载表格数据
     const {
       pageData,
@@ -82,32 +99,7 @@ export default {
     } = pagination(); // 分页组件
     const data = reactive({
       // table的数据
-      tableData: [
-        {
-          email: "test@qq.com",
-          truename: "王小虎",
-          phone: 13312341234,
-          region: "上海市普陀区金沙江路 1518 弄",
-          role: "超管",
-          switchFlag: false,
-        },
-        {
-          email: "test222@qq.com",
-          truename: "王小虎222",
-          phone: 13322222222,
-          region: "上海市普陀区金沙江路 2222 弄",
-          role: "普通观众",
-          switchFlag: false,
-        },
-        {
-          email: "test333@qq.com",
-          truename: "王小虎333",
-          phone: 13333333333,
-          region: "上海市普陀区金沙江路 3333 弄",
-          role: "大佬",
-          switchFlag: false,
-        },
-      ],
+      tableData: [],
       // 存储传进来的参数
       tableConfig: {
         // 多选框
@@ -123,6 +115,9 @@ export default {
       },
     });
 
+    /**
+     * methods
+     */
     // 初始化table配置项，处理从父组件传来的数据
     const handlerDataFromParent = () => {
       let configDatas = props.config;
@@ -134,6 +129,18 @@ export default {
           data.tableConfig[key] = configDatas[key];
         }
       }
+    };
+    // table组件的左侧勾选，发生改变时
+    const tableSelectionChanged = (value) => {
+      let rowDatas = {
+        id: value.map((item) => item.id),
+      };
+      emit("update:tableRowData", rowDatas);
+    };
+
+    // 刷新table数据，暂用于被父组件调用
+    const tableRefreshData = () => {
+      tableLoadData(data.tableConfig.requestData, root);
     };
 
     /**
@@ -175,8 +182,17 @@ export default {
       /* methods */
       handleSizeChange,
       handleCurrentChange,
+      tableSelectionChanged,
+      tableRefreshData,
     };
   },
 };
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.table-wrap {
+  margin-top: 15px;
+}
+.table-footer {
+  padding: 15px 0;
+}
+</style>

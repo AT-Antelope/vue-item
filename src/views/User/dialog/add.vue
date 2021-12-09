@@ -57,6 +57,7 @@
 </template>
 
 <script>
+import sha1 from "js-sha1";
 import CityPicker from "@c/cityPicker";
 import { AddInfo } from "@/api/news";
 import { ref, reactive, watch, watchEffect } from "@vue/composition-api";
@@ -90,7 +91,6 @@ export default {
     const formLabelWidth = ref("90px");
     // 确定按钮的是否加载中状态
     const submit_loading_flag = ref(false);
-
     const data = reactive({
       // 初始化省市区街组件显示的显示个数
       cityPickerInitDatas: [], //["province", "city", "area", "street"]
@@ -99,10 +99,10 @@ export default {
     });
     // 表单内数据model
     const form = reactive({
-      username: "123@qq.com", // 用户名
-      truename: "RWD", // 真实姓名
-      password: "123", // 密码
-      phone: 123222333, // 手机号
+      username: "", // 用户名
+      truename: "", // 真实姓名
+      password: "", // 密码
+      phone: "", // 手机号
       region: "", // 地区
       status: "0", // 禁启用radio，单选值
       role: [], // 角色，checkList的绑定值
@@ -136,19 +136,23 @@ export default {
       formValidate();
       /**
        * 深拷贝,(注意：对象会丢失)
-       *  JSON.parse(JSON.stringify(data.form)) // 输出字符串，再次转json对象
+       *    JSON.parse(JSON.stringify(data.form)) // 输出字符串，再次转json对象
        * 浅拷贝
-       *  Object.assign({}, data.form) // 拷贝出来的就是一个对象
+       *    Object.assign({}, data.form) // 拷贝出来的就是一个对象
        */
       // JSON的方法是深拷贝，否则浅拷贝的对象引用，会使界面上绑定的值类型变化，导致界面的值绑定失败
       //   let requestData = JSON.parse(JSON.stringify(form));
       let requestData = Object.assign({}, form);
-      requestData.region = JSON.stringify(requestData.region);
+      requestData.password = sha1(requestData.password);
+      //   requestData.region = JSON.stringify(data.cityPickerResults);
+      requestData.region = data.cityPickerResults;
       requestData.role = requestData.role.join();
       console.log(requestData);
+      // 请求接口
       root.$store
         .dispatch("common/userAdd", requestData)
         .then((response) => {
+          // console.log(request);
           root.$message.success(response.data.message);
           resetForm();
         })
@@ -185,7 +189,7 @@ export default {
     const resetForm = () => {
       data.cityPickerResults = {};
       // 清除表单
-      //   refs.addInfoForm.resetFeilds();
+      refs.addInfoForm.resetFields();
     };
 
     /**

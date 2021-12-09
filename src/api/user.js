@@ -57,8 +57,8 @@ export function CityPicker(data) {
             truename: String,
             password: String,
             phone: Number,
-            region: String,
-            status: String,
+            region: Object, (JSON格式) tips:接口文档里说是String，实际改成了传json就行
+            status: String, (0：禁用，1：启用)
             role: String,
             btnPerm: String,
  *      }
@@ -67,6 +67,20 @@ export function UserAdd(data) {
   return service.request({
     method: "post",
     url: "/user/add/",
+    data,
+  });
+}
+
+/**
+ * 用户删除
+ * 参数:{
+    id: String, (Array)
+ * }
+ */
+export function UserDelete(data) {
+  return service.request({
+    method: "post",
+    url: "/user/delete/",
     data,
   });
 }

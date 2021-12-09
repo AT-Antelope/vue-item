@@ -6,7 +6,7 @@ import {
   EditInfo,
   QiniuToken,
 } from "@/api/news";
-import { LoadTableData, CityPicker, UserAdd } from "@/api/user";
+import { LoadTableData, CityPicker, UserAdd, UserDelete } from "@/api/user";
 const state = {
   qiniuUrl: "http://r35ov7o36.hn-bkt.clouddn.com/",
 };
@@ -105,6 +105,17 @@ const actions = {
   userAdd(content, requestData) {
     return new Promise((resolve, reject) => {
       UserAdd(requestData)
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  userDelete(content, requestData) {
+    return new Promise((resolve, reject) => {
+      UserDelete(requestData)
         .then((response) => {
           resolve(response);
         })

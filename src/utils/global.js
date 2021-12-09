@@ -24,6 +24,13 @@ export function global() {
 
   /**
    * message提示框
+   * 参数:
+     {
+        msg:    String,
+        title:  String,
+        fn:     Function,
+        catchFn: Function,
+      }
    */
   const Comfirm = (params) => {
     MessageBox.confirm(params.msg, params.title || "提示", {
