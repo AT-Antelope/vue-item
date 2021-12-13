@@ -69,11 +69,13 @@ export default {
    * 参数配置: configTable: {
                     selectionFlag: true,
                     tableHeaderOptions: [
-                    { label: "邮箱/用户名", value: "email" },
-                    { label: "真实姓名", value: "name" },
-                    { label: "手机号", value: "phone" },
-                    { label: "地区", value: "address" },
-                    { label: "角色", value: "role" },
+                     { label: "邮箱/用户名", value: "email" },
+                     { label: "真实姓名", value: "name" },
+                     { label: "手机号", value: "phone" },
+                     { label: "地区", value: "address" },
+                     { label: "角色", value: "role" },
+                     { label: "禁启用状态", value: "status", columnType: "slot", slotName: "status" },
+                     { label: "操作", value: "operate", columnType: "slot", slotName: "buttons" },
                     ],
                 },
    *

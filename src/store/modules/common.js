@@ -6,7 +6,14 @@ import {
   EditInfo,
   QiniuToken,
 } from "@/api/news";
-import { LoadTableData, CityPicker, UserAdd, UserDelete } from "@/api/user";
+import {
+  LoadTableData,
+  CityPicker,
+  UserAdd,
+  UserDelete,
+  UserActives,
+  UserEdit,
+} from "@/api/user";
 const state = {
   qiniuUrl: "http://r35ov7o36.hn-bkt.clouddn.com/",
 };
@@ -113,9 +120,34 @@ const actions = {
         });
     });
   },
+  // 用户删除
   userDelete(content, requestData) {
     return new Promise((resolve, reject) => {
       UserDelete(requestData)
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  // 用户禁用状态，更改
+  userActives(content, requestData) {
+    return new Promise((resolve, reject) => {
+      UserActives(requestData)
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  // 用户编辑
+  userEdit(content, requestData) {
+    return new Promise((resolve, reject) => {
+      UserEdit(requestData)
         .then((response) => {
           resolve(response);
         })

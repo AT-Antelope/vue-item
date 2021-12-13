@@ -42,6 +42,7 @@
       <template v-slot:status="slotData">
         <el-switch
           v-model="slotData.data.status"
+          @change="handlerStatusChange(slotData.data)"
           active-value="1"
           inactive-value="0"
           active-color="#13ce66"
@@ -51,7 +52,7 @@
       </template>
       <template v-slot:buttons="slotData">
         <el-button type="danger" size="mini" @click="btnDelete(slotData)">删除</el-button>
-        <el-button type="success" size="mini" @click="btnManage(slotData)"
+        <el-button type="success" size="mini" @click="btnManage(slotData.data)"
           >管理</el-button
         >
       </template>
@@ -61,7 +62,11 @@
       <!-- /插槽 -->
     </TableComponent>
     <!-- dialog组件 -->
-    <DialogUserAdd :openFlag.sync="data.openFlag" />
+    <DialogUserAdd
+      :openFlag.sync="data.openFlag"
+      :editData="data.editDatas"
+      @refreshData="refreshTableData"
+    />
   </div>
 </template>
 <script>
@@ -95,7 +100,7 @@ export default {
           { label: "地区", value: "region" },
           { label: "角色", value: "role" },
           {
-            label: "禁启用状态",
+            label: "禁用状态",
             value: "status",
             columnType: "slot",
             slotName: "status",
@@ -120,6 +125,10 @@ export default {
       switchFlag: false,
       // dialog组件，显示flag
       openFlag: false,
+      // 用户禁用，请求中状态，防止请求中用户连点
+      userActiveUpdatingFlag: false,
+      // 要编辑的数据，用于传进DialogUserAdd组件内，初始化当前值
+      editDatas: {},
     });
 
     /**
@@ -152,8 +161,9 @@ export default {
     };
     // 编辑按钮
     const btnManage = (slotData) => {
-      data.userCurrentDatas = slotData.data;
-      console.log(slotData);
+      data.userCurrentDatas = slotData;
+      data.openFlag = true;
+      data.editDatas = Object.assign({}, slotData); // 浅拷贝
     };
     // 批量删除按钮
     const btnDeleteSelected = () => {
@@ -180,11 +190,37 @@ export default {
         .dispatch("common/userDelete", requestData)
         .then((response) => {
           root.$message.success(response.data.message);
-          // 组件通讯，通过table组件的ref值，来调用组件内的方法
-          refs.userTable.tableRefreshData();
+          refreshTableData();
         })
         .catch((error) => {
           console.log(error);
+        });
+    };
+    // 刷新table数据
+    const refreshTableData = () => {
+      // 组件通讯，通过table组件的ref值，来调用组件内的方法
+      refs.userTable.tableRefreshData();
+    };
+    // status用户禁启用状态，改变时
+    const handlerStatusChange = (params) => {
+      // 请求中时，防抖动
+      if (data.userActiveUpdatingFlag) {
+        return false;
+      }
+      data.userActiveUpdatingFlag = true;
+      let requestData = {
+        id: params.id,
+        status: params.status == 1 ? true : 2,
+      };
+      root.$store
+        .dispatch("common/userActives", requestData)
+        .then((response) => {
+          data.userActiveUpdatingFlag = false;
+          root.$message.success(response.data.message);
+        })
+        .catch((err) => {
+          data.userActiveUpdatingFlag = false;
+          console.log(err);
         });
     };
 
@@ -195,6 +231,8 @@ export default {
       btnDelete,
       btnManage,
       btnDeleteSelected,
+      refreshTableData,
+      handlerStatusChange,
     };
   },
 };

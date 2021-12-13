@@ -241,6 +241,7 @@ export default {
       passwordVerify: "",
     });
 
+    // 验证规则
     const rules = reactive({
       username: [{ validator: validateUsername, trigger: "blur" }],
       password: [{ validator: validatePassword, trigger: "blur" }],

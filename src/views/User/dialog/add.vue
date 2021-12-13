@@ -7,38 +7,44 @@
       @opened="openDialog"
       width="630px"
     >
-      <el-form :model="form" ref="addInfoForm">
+      <el-form
+        :model="data.form"
+        :rules="data.validateRules"
+        ref="addInfoForm"
+        status-icon
+      >
         <!-- 用户名 -->
         <el-form-item label="用户名:" :label-width="formLabelWidth" prop="username">
-          <el-input v-model="form.username" placeholder="请输入邮箱"></el-input>
-        </el-form-item>
-        <!-- 姓名 -->
-        <el-form-item label="姓名:" :label-width="formLabelWidth" prop="truename">
-          <el-input v-model="form.truename" placeholder="请输入姓名"></el-input>
+          <el-input v-model="data.form.username" placeholder="请输入邮箱"></el-input>
         </el-form-item>
         <!-- 密码 -->
         <el-form-item label="密码:" :label-width="formLabelWidth" prop="password">
-          <el-input v-model="form.password" placeholder="请输入密码"></el-input>
+          <el-input v-model="data.form.password" placeholder="请输入密码"></el-input>
+        </el-form-item>
+        <!-- 姓名 -->
+        <el-form-item label="姓名:" :label-width="formLabelWidth" prop="w">
+          <el-input v-model="data.form.truename" placeholder="请输入姓名"></el-input>
         </el-form-item>
         <!-- 手机号 -->
-        <el-form-item label="手机号:" :label-width="formLabelWidth" prop="phone">
-          <el-input v-model.number="form.phone" placeholder="请输入手机号"> </el-input>
+        <el-form-item label="手机号:" :label-width="formLabelWidth">
+          <el-input v-model.number="data.form.phone" placeholder="请输入手机号">
+          </el-input>
         </el-form-item>
         <!-- 地区 -->
-        <el-form-item label="地区:" :label-width="formLabelWidth" prop="region">
+        <el-form-item label="地区:" :label-width="formLabelWidth">
           <CityPicker
             :cityPickerInit="data.cityPickerInitDatas"
             :cityPickerDatas.sync="data.cityPickerResults"
           />
         </el-form-item>
         <!-- 是否启用 -->
-        <el-form-item label="是否启用:" :label-width="formLabelWidth" prop="status">
-          <el-radio v-model="form.status" label="0">禁用</el-radio>
-          <el-radio v-model="form.status" label="1">启用</el-radio>
+        <el-form-item label="是否启用:" :label-width="formLabelWidth">
+          <el-radio v-model="data.form.status" label="0">禁用</el-radio>
+          <el-radio v-model="data.form.status" label="1">启用</el-radio>
         </el-form-item>
         <!-- 角色权限 -->
         <el-form-item label="角色权限:" :label-width="formLabelWidth" prop="role">
-          <el-checkbox-group v-model="form.role">
+          <el-checkbox-group v-model="data.form.role">
             <!-- <el-checkbox label="系统管理员"></el-checkbox>-->
             <el-checkbox label="infoSystem">信息管理员</el-checkbox>
             <el-checkbox label="userSystem">用户管理员</el-checkbox>
@@ -48,7 +54,10 @@
       <!-- 底部按钮 -->
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDialog">取消</el-button>
-        <el-button type="danger" :loading="submit_loading_flag" @click="submit"
+        <el-button
+          type="danger"
+          :loading="submit_loading_flag"
+          @click="submit('addInfoForm')"
           >确定</el-button
         >
       </div>
@@ -61,6 +70,7 @@ import sha1 from "js-sha1";
 import CityPicker from "@c/cityPicker";
 import { AddInfo } from "@/api/news";
 import { ref, reactive, watch, watchEffect } from "@vue/composition-api";
+import { stripscript, validateEmail, validatePwd, validateCode } from "@/utils/validate";
 export default {
   /**
    * element弹窗组件
@@ -80,8 +90,46 @@ export default {
       type: Array,
       default: () => [],
     },
+    editData: {
+      type: Object,
+      default: () => {},
+    },
   },
   setup(props, { root, emit, refs }) {
+    /**
+     * ***************************************************************
+     * 验证规则
+     * 必须在绑定的数据定义前声明，否则定义规则时，验证方法不存在，视为默认通过
+     */
+    // 验证用户名为邮箱
+    const validateUsername = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("请输入用户名"));
+        // 输入格式与正则表达式reg不符时
+      } else if (!validateEmail(value)) {
+        callback(new Error("请输入正确的邮箱格式"));
+      } else {
+        callback(); //返回true
+      }
+    };
+
+    // 验证密码
+    const validatePassword = (rule, value, callback) => {
+      if (value) {
+        // 过滤后的数据，更新绑定的数据，
+        data.form.password = stripscript(value);
+        // 再重新传给value来进行验证判断
+        value = data.form.password;
+      }
+      if (value === "") {
+        callback(new Error("请输入密码"));
+      } else if (!validatePwd(value)) {
+        callback(new Error("密码长度应为8到16位，且同时包含字母和数字"));
+      } else {
+        callback();
+      }
+    };
+    // ***************************************************************
     /**
      * data
      */
@@ -93,20 +141,27 @@ export default {
     const submit_loading_flag = ref(false);
     const data = reactive({
       // 初始化省市区街组件显示的显示个数
-      cityPickerInitDatas: [], //["province", "city", "area", "street"]
+      cityPickerInitDatas: [], // ["province", "city", "area", "street"]
       // 接收返回出来的结果值
       cityPickerResults: {},
+      // 验证规则
+      validateRules: {
+        username: [{ validator: validateUsername, trigger: "blur" }],
+        password: [{ validator: validatePassword, trigger: "blur" }],
+        role: [{ required: true, message: "请选择角色权限", trigger: "change" }],
+      },
+      // 表单内数据model
+      form: {
+        username: "", // 用户名
+        password: "", // 密码
+        truename: "", // 真实姓名
+        phone: "", // 手机号
+        region: "", // 地区
+        status: "0", // 禁启用radio，单选值
+        role: [], // 角色，checkList的绑定值
+      },
     });
-    // 表单内数据model
-    const form = reactive({
-      username: "", // 用户名
-      truename: "", // 真实姓名
-      password: "", // 密码
-      phone: "", // 手机号
-      region: "", // 地区
-      status: "0", // 禁启用radio，单选值
-      role: [], // 角色，checkList的绑定值
-    });
+
     // 从父组件接收到的分类数据
     const categoryOptions = reactive({
       item: [],
@@ -124,7 +179,11 @@ export default {
     };
     // 弹窗打开事件，点击新增按钮时把接收父组件的数据存储起来
     const openDialog = () => {
+      // 储存从父组件传进来的数据
       categoryOptions.item = props.category;
+      let editData = props.editData;
+      editData.role = editData.role.split(",");
+      data.form = editData;
     };
     // element-ui的select组件的change:选中值发生变化时触发事件
     const categorySelectChanged = (value) => {
@@ -132,8 +191,7 @@ export default {
       categoryOptions.current = { id: value };
     };
     // 提交按钮
-    const submit = () => {
-      formValidate();
+    const submit = (formName) => {
       /**
        * 深拷贝,(注意：对象会丢失)
        *    JSON.parse(JSON.stringify(data.form)) // 输出字符串，再次转json对象
@@ -142,48 +200,33 @@ export default {
        */
       // JSON的方法是深拷贝，否则浅拷贝的对象引用，会使界面上绑定的值类型变化，导致界面的值绑定失败
       //   let requestData = JSON.parse(JSON.stringify(form));
-      let requestData = Object.assign({}, form);
-      requestData.password = sha1(requestData.password);
-      //   requestData.region = JSON.stringify(data.cityPickerResults);
-      requestData.region = data.cityPickerResults;
-      requestData.role = requestData.role.join();
-      console.log(requestData);
-      // 请求接口
-      root.$store
-        .dispatch("common/userAdd", requestData)
-        .then((response) => {
-          // console.log(request);
-          root.$message.success(response.data.message);
-          resetForm();
-        })
-        .catch((error) => {
-          console.log(error);
-          resetForm();
-        });
-    };
-    // 表单验证
-    const formValidate = () => {
-      if (!form.username) {
-        root.$message({
-          type: "error",
-          message: "用户名不能为空！",
-        });
-        return false;
-      }
-      if (!form.password) {
-        root.$message({
-          type: "error",
-          message: "密码不能为空！",
-        });
-        return false;
-      }
-      if (form.role.length === 0) {
-        root.$message({
-          type: "error",
-          message: "角色权限不能为空！",
-        });
-        return false;
-      }
+      // 表单验证
+      refs[formName].validate((valid) => {
+        if (valid) {
+          let requestData = Object.assign({}, data.form);
+          requestData.password = sha1(requestData.password);
+          //   requestData.region = JSON.stringify(data.cityPickerResults);
+          requestData.region = data.cityPickerResults;
+          requestData.role = requestData.role.join();
+          // 请求接口
+          root.$store
+            .dispatch("common/userAdd", requestData)
+            .then((response) => {
+              // console.log(request);
+              root.$message.success(response.data.message);
+              resetForm();
+              closeDialog();
+              emit("refreshData");
+            })
+            .catch((error) => {
+              console.log(error);
+              resetForm();
+            });
+        } else {
+          console.log("error submit!");
+          return false;
+        }
+      });
     };
     // 清除表单
     const resetForm = () => {
@@ -204,7 +247,7 @@ export default {
     watch(
       () => data.cityPickerResults,
       (newValue) => {
-        form.region = newValue;
+        data.form.region = newValue;
       }
     );
 
@@ -215,7 +258,6 @@ export default {
       submit_loading_flag,
       /* reactive */
       data,
-      form,
       categoryOptions,
       /* methods */
       closeDialog,
