@@ -24,11 +24,7 @@
         </div>
       </el-col>
       <el-col :span="4">
-        <el-button
-          type="danger"
-          size="small"
-          class="float-right"
-          @click="data.openFlag = true"
+        <el-button type="danger" size="small" class="float-right" @click="btnUserAdd"
           >新增</el-button
         >
       </el-col>
@@ -64,7 +60,7 @@
     <!-- dialog组件 -->
     <DialogUserAdd
       :openFlag.sync="data.openFlag"
-      :editData="data.editDatas"
+      :editData.sync="data.editDatas"
       @refreshData="refreshTableData"
     />
   </div>
@@ -134,6 +130,12 @@ export default {
     /**
      * methods
      */
+    const btnUserAdd = () => {
+      // 用于清空已填值
+      data.editDatas = {};
+      // 显示新增弹窗
+      data.openFlag = true;
+    };
     // 删除按钮
     const btnDelete = (slotData) => {
       data.userCurrentDatas = slotData.data;
@@ -162,8 +164,9 @@ export default {
     // 编辑按钮
     const btnManage = (slotData) => {
       data.userCurrentDatas = slotData;
-      data.openFlag = true;
       data.editDatas = Object.assign({}, slotData); // 浅拷贝
+      // 显示新增弹窗
+      data.openFlag = true;
     };
     // 批量删除按钮
     const btnDeleteSelected = () => {
@@ -228,6 +231,7 @@ export default {
       /* data */
       data,
       /* methods */
+      btnUserAdd,
       btnDelete,
       btnManage,
       btnDeleteSelected,

@@ -22,7 +22,7 @@
           <el-input v-model="data.form.password" placeholder="请输入密码"></el-input>
         </el-form-item>
         <!-- 姓名 -->
-        <el-form-item label="姓名:" :label-width="formLabelWidth" prop="w">
+        <el-form-item label="姓名:" :label-width="formLabelWidth">
           <el-input v-model="data.form.truename" placeholder="请输入姓名"></el-input>
         </el-form-item>
         <!-- 手机号 -->
@@ -115,18 +115,26 @@ export default {
 
     // 验证密码
     const validatePassword = (rule, value, callback) => {
-      if (value) {
-        // 过滤后的数据，更新绑定的数据，
-        data.form.password = stripscript(value);
-        // 再重新传给value来进行验证判断
-        value = data.form.password;
-      }
-      if (value === "") {
-        callback(new Error("请输入密码"));
-      } else if (!validatePwd(value)) {
-        callback(new Error("密码长度应为8到16位，且同时包含字母和数字"));
-      } else {
+      // 编辑按钮进来的，id存在，且密码为空时不验证
+      if (data.form.id && !value) {
         callback();
+      }
+      // 编辑按钮进来的，id存在，且密码不为空时需要验证
+      // 新增按钮进来的，id不存在时需要验证
+      if ((data.form.id && value) || !data.form.id) {
+        if (value) {
+          // 过滤后的数据，更新绑定的数据，
+          data.form.password = stripscript(value);
+          // 再重新传给value来进行验证判断
+          value = data.form.password;
+        }
+        if (value === "") {
+          callback(new Error("请输入密码"));
+        } else if (!validatePwd(value)) {
+          callback(new Error("密码长度应为8到16位，且同时包含字母和数字"));
+        } else {
+          callback();
+        }
       }
     };
     // ***************************************************************
@@ -175,15 +183,31 @@ export default {
     const closeDialog = () => {
       // 关闭对话框时，将本组件的dialog_info_add_flag值修改为false
       dialog_info_add_flag.value = false;
+      resetForm();
       emit("update:openFlag", false);
     };
     // 弹窗打开事件，点击新增按钮时把接收父组件的数据存储起来
     const openDialog = () => {
       // 储存从父组件传进来的数据
       categoryOptions.item = props.category;
+      // 初始化数据
       let editData = props.editData;
-      editData.role = editData.role.split(",");
-      data.form = editData;
+      // 数据校验，有id值，编辑按钮进来的
+      if (editData.id) {
+        editData.role = editData.role.split(",");
+        // 将key相同的值储存起来
+        for (let key in editData) {
+          data.form[key] = editData.id ? editData[key] : "";
+        }
+      } else {
+        // 没有id值，添加按钮进来的
+        // data.form.id && delete data.form.id; // JSON的方法？
+        for (let key in data.form) {
+          data.form[key] = "";
+        }
+        data.form.status = "0";
+        data.form.role = [];
+      }
     };
     // element-ui的select组件的change:选中值发生变化时触发事件
     const categorySelectChanged = (value) => {
@@ -204,29 +228,62 @@ export default {
       refs[formName].validate((valid) => {
         if (valid) {
           let requestData = Object.assign({}, data.form);
-          requestData.password = sha1(requestData.password);
           //   requestData.region = JSON.stringify(data.cityPickerResults);
           requestData.region = data.cityPickerResults;
           requestData.role = requestData.role.join();
-          // 请求接口
-          root.$store
-            .dispatch("common/userAdd", requestData)
-            .then((response) => {
-              // console.log(request);
-              root.$message.success(response.data.message);
-              resetForm();
-              closeDialog();
-              emit("refreshData");
-            })
-            .catch((error) => {
-              console.log(error);
-              resetForm();
-            });
+          if (data.form.id) {
+            // 编辑状态，值存在，需要密码且加密
+            // 编辑状态，值不存在，删除
+            if (requestData.password) {
+              requestData.password = sha1(requestData.password);
+            } else {
+              delete requestData.password;
+            }
+            console.log("userEdit");
+            userEdit(requestData);
+          } else {
+            // 添加状态，需要密码，且加密
+            requestData.password = sha1(requestData.password);
+            console.log("userAdd");
+            userAdd(requestData);
+          }
         } else {
           console.log("error submit!");
           return false;
         }
       });
+    };
+    const userAdd = (requestData) => {
+      // 请求接口
+      root.$store
+        .dispatch("common/userAdd", requestData)
+        .then((response) => {
+          // console.log(request);
+          root.$message.success(response.data.message);
+          resetForm();
+          closeDialog();
+          emit("refreshData");
+        })
+        .catch((error) => {
+          console.log(error);
+          resetForm();
+        });
+    };
+    const userEdit = (requestData) => {
+      // 请求接口
+      root.$store
+        .dispatch("common/userEdit", requestData)
+        .then((response) => {
+          // console.log(request);
+          root.$message.success(response.data.message);
+          resetForm();
+          closeDialog();
+          emit("refreshData");
+        })
+        .catch((error) => {
+          console.log(error);
+          resetForm();
+        });
     };
     // 清除表单
     const resetForm = () => {
