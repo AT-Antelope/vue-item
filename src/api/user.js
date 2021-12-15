@@ -5,17 +5,17 @@ import service from "@/utils/request";
  * 获取用户列表
  * url: /user/getList/
  *{
-     username:""
-     truename:""
+     username: string
+     truename: string
      phone: number
-     pageNumber: number
-     pageSize: number
+     pageNumber: *number
+     pageSize: *number
  }
  */
 export function LoadTableData(params) {
   return service.request({
     method: params.method || "post",
-    url: params.url,
+    url: params.url || "/user/getList/",
     data: params.data || {
       pageNumber: 1,
       pageSize: 10,

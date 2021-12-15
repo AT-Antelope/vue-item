@@ -1,5 +1,5 @@
 <template>
-  <el-select v-model="data.selectedValue" placeholder="请选择">
+  <el-select v-model="data.selectedValue" placeholder="请选择" @change="selectOnChange">
     <el-option
       v-for="item in data.selectKeywordOptions"
       :key="item.value"
@@ -16,9 +16,9 @@ export default {
    * 引用方式: import SelectKeyword from "@c/Select";
    * template: <SelectKeyword :config="..." />
    * 参数配置: {
-   *             config : ["userName","name","phone","region","character"]
+   *             config : ["username","truename","phone"]
    *          }
-   * 
+   *
    */
   name: "selectKeyword",
   props: {
@@ -26,8 +26,12 @@ export default {
       type: Object,
       default: () => {},
     },
+    searchSelectedData: {
+      type: Object,
+      default: () => {},
+    },
   },
-  setup(props, { root }) {
+  setup(props, { root, emit }) {
     const data = reactive({
       //下拉框值
       selectedValue: "",
@@ -35,14 +39,17 @@ export default {
       selectKeywordOptions: [],
       // 用于初始化的数据
       options: [
-        { value: "userName", label: "邮箱/用户名" },
-        { value: "name", label: "姓名" },
+        { value: "username", label: "邮箱/用户名" },
+        { value: "truename", label: "姓名" },
         { value: "phone", label: "手机号" },
         { value: "region", label: "地区" },
-        { value: "character", label: "角色" },
+        { value: "role", label: "角色" },
       ],
     });
 
+    /**
+     * methods
+     */
     // 初始化下拉框数据
     let initOptions = () => {
       let waitForInitOptions = props.config.waitForInitOptions;
@@ -69,6 +76,11 @@ export default {
       // 初始化搜索类型
       data.selectedValue = optionsArr[0].value;
     };
+    // 搜索类型选择值改变时
+    const selectOnChange = (value) => {
+      let filterData = data.options.filter((item) => item.value == value)[0];
+      emit("update:searchSelectedData", filterData);
+    };
 
     /**
      * life sycle
@@ -77,7 +89,10 @@ export default {
       initOptions();
     });
     return {
+      /* data */
       data,
+      /* methods */
+      selectOnChange,
     };
   },
 };

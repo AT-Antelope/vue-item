@@ -8,7 +8,10 @@
           <div class="wrap-content">
             <el-row :gutter="15">
               <el-col :span="3">
-                <SelectKeyword :config="data.configOptions" />
+                <SelectKeyword
+                  :config="data.configOptions"
+                  :searchSelectedData.sync="data.searchSelectedDatas"
+                />
               </el-col>
               <el-col :span="5">
                 <el-input
@@ -17,7 +20,13 @@
                 ></el-input>
               </el-col>
               <el-col :span="15">
-                <el-button type="danger" size="small">搜索</el-button>
+                <el-button
+                  v-model="data.inputSearch"
+                  type="danger"
+                  size="small"
+                  @click="btnSearch"
+                  >搜索</el-button
+                >
               </el-col>
             </el-row>
           </div>
@@ -82,7 +91,7 @@ export default {
       userCurrentDatas: {},
       // 关键字下拉框配置项
       configOptions: {
-        waitForInitOptions: ["userName", "name", "region"],
+        waitForInitOptions: ["username", "phone"], // truename的搜索接口文档暂时有问题，永远返回全部
       },
       // 用于接收table表格的当前行数据
       tableRowDatas: {},
@@ -115,6 +124,10 @@ export default {
         paginationFlag: true, // 是否显示组件
         paginationLayout: "total, sizes, prev, pager, next, jumper", // 显示的参数,"total, sizes, prev, pager, next, jumper"
       },
+      // 搜索框值
+      inputSearch: "",
+      // 搜索类型选中项
+      searchSelectedDatas: {},
       // 关键字输入框
       inputKeyword: "",
       // 开关值
@@ -226,6 +239,18 @@ export default {
           console.log(err);
         });
     };
+    // 搜索按钮
+    const btnSearch = () => {
+      // 数据检验，第一次搜索，且没有类型选项改变时，默认为undefined时，附一个默认值
+      if (!data.searchSelectedDatas.value) {
+        data.searchSelectedDatas = { label: "邮箱/用户名", value: "username" };
+      }
+      let requestData = { [data.searchSelectedDatas.value]: data.inputKeyword };
+      refs.userTable.tableRefreshDataParam(requestData);
+
+      // 清除搜索输入框
+      data.inputKeyword = "";
+    };
 
     return {
       /* data */
@@ -237,6 +262,7 @@ export default {
       btnDeleteSelected,
       refreshTableData,
       handlerStatusChange,
+      btnSearch,
     };
   },
 };

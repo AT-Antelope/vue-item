@@ -69,10 +69,10 @@ export default {
    * 参数配置: configTable: {
                     selectionFlag: true,
                     tableHeaderOptions: [
-                     { label: "邮箱/用户名", value: "email" },
-                     { label: "真实姓名", value: "name" },
+                     { label: "邮箱/用户名", value: "username" },
+                     { label: "真实姓名", value: "truename" },
                      { label: "手机号", value: "phone" },
-                     { label: "地区", value: "address" },
+                     { label: "地区", value: "region" },
                      { label: "角色", value: "role" },
                      { label: "禁启用状态", value: "status", columnType: "slot", slotName: "status" },
                      { label: "操作", value: "operate", columnType: "slot", slotName: "buttons" },
@@ -144,6 +144,15 @@ export default {
     const tableRefreshData = () => {
       tableLoadData(data.tableConfig.requestData, root);
     };
+    // 刷新table数据，带参数的
+    const tableRefreshDataParam = (params) => {
+      let requestData = Object.assign({}, params, {
+        pageNumber: 1,
+        pageSize: 10,
+      });
+      data.tableConfig.requestData.data = requestData;
+      tableLoadData(data.tableConfig.requestData, root);
+    };
 
     /**
      * watch
@@ -186,6 +195,7 @@ export default {
       handleCurrentChange,
       tableSelectionChanged,
       tableRefreshData,
+      tableRefreshDataParam,
     };
   },
 };

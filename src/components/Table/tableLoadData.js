@@ -16,7 +16,7 @@ export function loadData() {
     root.$store
       .dispatch("common/loadTableData", requestData)
       .then((response) => {
-          let responseData = response.data.data.data;
+        let responseData = response.data.data.data;
         // 数据检验，有时返回的数据可能为null，现后台已做返回必定是个数组，无论是否为空
         // if (responseData && responseData.length > 0) {
         // }
