@@ -5,11 +5,13 @@ Vue.use(Vuex);
 import app from "./modules/app.js";
 import common from "./modules/common.js";
 import infoDetails from "./modules/infoDetails.js";
+import permission from "./modules/permission.js";
 
 export default new Vuex.Store({
   modules: {
     app,
     common,
     infoDetails,
+    permission,
   },
 });

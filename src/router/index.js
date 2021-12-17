@@ -7,7 +7,8 @@ Vue.use(VueRouter);
 // 引入index时可省略，默认为index
 import Layout from "@/views/Layout/index.vue";
 
-const routes = [
+// 默认路由
+export const defualtRouterMap = [
   {
     path: "/",
     redirect: "login",
@@ -46,7 +47,7 @@ const routes = [
     ],
   },
 
-  /**
+  /************************ 以下为动态路由部分，需要实现时可删除 *********************************************
    * 信息管理
    */
   {
@@ -111,8 +112,75 @@ const routes = [
   },
 ];
 
-const router = new VueRouter({
-  routes,
-});
+// 动态路由
+export const asyncRouterMap = [
+  /**
+   * 信息管理
+   */
+  {
+    path: "/info",
+    name: "Info",
+    meta: {
+      system: "infoSystem",
+      name: "信息管理",
+      icon: "menu",
+    },
+    component: Layout,
+    children: [
+      {
+        path: "/infoIndex",
+        name: "InfoIndex",
+        meta: {
+          name: "信息列表",
+        },
+        component: () => import("../views/Info/index.vue"),
+      },
+      {
+        path: "/infoCategory",
+        name: "InfoCategory",
+        meta: {
+          name: "信息分类",
+        },
+        component: () => import("../views/Info/category.vue"),
+      },
+      {
+        // path: "/infoDetails/:id/:title",
+        path: "/infoDetails",
+        name: "InfoDetails",
+        hidden: true,
+        meta: {
+          name: "信息详情",
+        },
+        component: () => import("../views/Info/details.vue"),
+      },
+    ],
+  },
 
-export default router;
+  /**
+   * 用户管理
+   */
+  {
+    path: "/user",
+    name: "User",
+    meta: {
+      system: "userSystem",
+      name: "用户管理",
+      icon: "user",
+    },
+    component: Layout,
+    children: [
+      {
+        path: "/userIndex",
+        name: "UserIndex",
+        meta: {
+          name: "用户列表",
+        },
+        component: () => import("../views/User/index"),
+      },
+    ],
+  },
+];
+
+export default new VueRouter({
+  routes: defualtRouterMap,
+});

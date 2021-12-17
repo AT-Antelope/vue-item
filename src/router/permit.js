@@ -19,12 +19,40 @@ router.beforeEach((to, from, next) => {
 
     // 安全性，当用户回到登录界面时，清除token，只能重新登录
     if (to.path === "/login") {
+      // 有token,回到了login
       store.dispatch("app/removeToken");
       next();
-      //   console.log("有token,回到了login");
     } else {
       next();
-      //   console.log("有token，进入非login");
+
+      // 有token，进入非login
+      if (store.getters["permission/roles"].length === 0) {
+        let requestData = {
+          data: {
+            username: "asdjkl@cc.com",
+            pageNumber: 1,
+            pageSize: 1,
+          },
+        };
+        // 获取角色权限
+        store
+          .dispatch("permission/getRoles", requestData)
+          .then((response) => {
+            // 储存要更新的新路由
+            store.dispatch("permission/createRouter", response);
+            let addRoutesArray = store.getters["permission/addRouter"];
+            let allRoutesArray = store.getters["permission/allRouter"];
+            // 路由更新
+            router.options.routes = allRoutesArray;
+            // 添加动态路由
+            router.addRoutes(addRoutesArray);
+            // replace参数，不被记入历史记录，不能进行路由返回
+            next({ ...to, replace: true }); // ...to，es6扩展运算符，防止内容发生变化的情况
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
     }
   } else {
     //   token不存在时
@@ -32,11 +60,9 @@ router.beforeEach((to, from, next) => {
     if (whiteList.indexOf(to.path) !== -1) {
       // 如果是白名单的页面则直接进入
       next(); // 不带参数返回to的值，不带参数的next()不会重复触发beforeEach()
-      //   console.log("没有token,但此页面是白名单");
     } else {
       // 没有token且不在白名单内返回到登录页面
       next("/login");
-      //   console.log("不是白名单，回到登录页");
     }
   }
 
