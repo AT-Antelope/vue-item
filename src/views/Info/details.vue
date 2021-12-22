@@ -55,7 +55,7 @@
 </template>
 <script>
 import { timestampToTime } from "@/utils/common.js";
-import { reactive, onMounted } from "@vue/composition-api";
+import { reactive, onMounted, onActivated } from "@vue/composition-api";
 // 组件
 import UploadImg from "@c/UploadImg";
 // 富文本编辑器
@@ -221,6 +221,7 @@ export default {
     /**
      * life cycle
      */
+    // 装载完毕，只在第一次加载会执行
     onMounted(() => {
       //   let id = root.$route.params.id || root.$store.getters["infoDetails/infoId"];
       //   let title =
@@ -228,6 +229,13 @@ export default {
 
       // 获取分类信息
       getInfoCategory();
+    });
+
+    // keep-alive生命周期
+    // 激活完毕，在onMounted之后执行，使用keep-alive后，转到其他页面再回来也会执行
+    onActivated(() => {
+      // 每次进入时更新当前ID
+      data.id = root.$route.params.id || root.$store.getters["infoDetails/infoId"];
       // 获取信息数据
       getInfo();
     });

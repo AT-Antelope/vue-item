@@ -241,10 +241,11 @@ export default {
     };
     // 搜索按钮
     const btnSearch = () => {
-      // 数据检验，第一次搜索，且没有类型选项改变时，默认为undefined时，附一个默认值
-      if (!data.searchSelectedDatas.value) {
-        data.searchSelectedDatas = { label: "邮箱/用户名", value: "username" };
-      }
+      // 原做法，现采用组件内主动提交更新，来修改值
+      //   // 数据检验，第一次搜索，且没有类型选项改变时，默认为undefined时，附一个默认值
+      //   if (!data.searchSelectedDatas.value) {
+      //     data.searchSelectedDatas = { label: "邮箱/用户名", value: "username" };
+      //   }
       let requestData = { [data.searchSelectedDatas.value]: data.inputKeyword };
       refs.userTable.tableRefreshDataParam(requestData);
 

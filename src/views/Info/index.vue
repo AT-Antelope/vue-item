@@ -251,6 +251,10 @@ export default {
     const formatToTitle = (row, column, cellValue, index) => {
       let ID = row.categoryId;
       let category = formType_options.category.filter((item) => item.id == ID)[0];
+      // 有时category的值为undefined，所以.category_name会找不到，导致报错，可能是获取时页面或数据没加载完
+      if (!category) {
+        return false;
+      }
       return category.category_name;
     };
     // 日期格式转换，formatter: element-ui组件的方法，返回一个值替换原始值

@@ -5,7 +5,7 @@
         <img src="../../../assets/logo.png" alt="" />
       </h1>
       <el-menu
-        default-active="2"
+        :default-active="defaultActive"
         class="el-menu-vertical-demo"
         background-color="transparent"
         :collapse="isCollapse"
@@ -49,7 +49,6 @@ export default {
      */
     // 从router里获取数据
     const routers = root.$router.options.routes;
-    // console.log(routers);
 
     /**
      * computed监听
@@ -57,6 +56,12 @@ export default {
     //   菜单是否为折叠状态，默认为false(展开)
     const isCollapse = computed(() => {
       return root.$store.state.app.isCollapse;
+    });
+    // 侧面导航栏，读取默认激活值，修复刷新后激活状态消失
+    const defaultActive = computed(() => {
+      const route = root.$route;
+      const { path } = route; // 解构
+      return path;
     });
 
     /**
@@ -66,6 +71,7 @@ export default {
     return {
       isCollapse,
       routers,
+      defaultActive,
     };
   },
 };

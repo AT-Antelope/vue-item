@@ -75,6 +75,8 @@ export default {
       data.selectKeywordOptions = optionsArr;
       // 初始化搜索类型
       data.selectedValue = optionsArr[0].value;
+      // 未选择搜索类型时，防止第一次没有值报错
+      emit("update:searchSelectedData", optionsArr[0]);
     };
     // 搜索类型选择值改变时
     const selectOnChange = (value) => {

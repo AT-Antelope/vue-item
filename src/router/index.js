@@ -7,7 +7,7 @@ Vue.use(VueRouter);
 // 引入index时可省略，默认为index
 import Layout from "@/views/Layout/index.vue";
 
-// 默认路由
+// 默认路由，静态路由
 export const defualtRouterMap = [
   {
     path: "/",
@@ -63,6 +63,7 @@ export const defualtRouterMap = [
         path: "/infoIndex",
         name: "InfoIndex",
         meta: {
+          keepAlive: true,
           name: "信息列表",
         },
         component: () => import("../views/Info/index.vue"),
@@ -71,6 +72,7 @@ export const defualtRouterMap = [
         path: "/infoCategory",
         name: "InfoCategory",
         meta: {
+          keepAlive: true,
           name: "信息分类",
         },
         component: () => import("../views/Info/category.vue"),
@@ -81,13 +83,13 @@ export const defualtRouterMap = [
         name: "InfoDetails",
         hidden: true,
         meta: {
+          keepAlive: true,
           name: "信息详情",
         },
         component: () => import("../views/Info/details.vue"),
       },
     ],
   },
-
   /**
    * 用户管理
    */
@@ -104,11 +106,39 @@ export const defualtRouterMap = [
         path: "/userIndex",
         name: "UserIndex",
         meta: {
+          keepAlive: true,
           name: "用户列表",
         },
         component: () => import("../views/User/index"),
       },
     ],
+  },
+  // ********************************************************************************************************
+  /**
+   * 404页面，若出现动态路由页面刷新后，会进入404页面的情况，把404放进动态路由里即可
+   */
+  {
+    path: "/page404",
+    meta: {
+      name: "404",
+      icon: "404",
+    },
+    hidden: true,
+    component: Layout,
+    children: [
+      {
+        path: "/404",
+        meta: {
+          name: "404",
+        },
+        component: () => import("../views/404/index.vue"),
+      },
+    ],
+  },
+  {
+    path: "*",
+    redirect: "/404",
+    hidden: true,
   },
 ];
 

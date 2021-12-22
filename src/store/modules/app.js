@@ -15,10 +15,12 @@ const state = {
   // token
   _token: "",
   username: getUserName() || "",
+  roles: [], // 储存账号的系统权限
 };
 
 const getters = {
   isCollapse: (state) => state.isCollapse,
+  roles: (state) => state.roles,
 };
 
 const mutations = {
@@ -43,6 +45,9 @@ const mutations = {
   },
   SET_USERNAME_TEST(state) {
     state.username = "test@gmail.com";
+  },
+  SET_ROLES(state, value) {
+    state.roles = value;
   },
 };
 
@@ -76,13 +81,14 @@ const actions = {
     });
   },
 
-  // 移除token和username (回到登录页面时)
+  // 退出登录，移除token和username (回到登录页面时)
   removeToken({ commit }) {
     return new Promise((resolve, reject) => {
       removeToken();
       removeUserName();
       commit("SET_TOKEN", "");
       commit("SET_USERNAME", "");
+      commit("SET_ROLES", []);
       resolve();
     });
   },

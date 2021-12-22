@@ -26,7 +26,10 @@ router.beforeEach((to, from, next) => {
       next();
 
       // 有token，进入非login
-      if (store.getters["permission/roles"].length === 0) {
+      if (store.getters["app/roles"].length === 0) {
+        /**
+         * 按系统分配
+         */
         let requestData = {
           data: {
             username: "asdjkl@cc.com",
@@ -38,14 +41,16 @@ router.beforeEach((to, from, next) => {
         store
           .dispatch("permission/getRoles", requestData)
           .then((response) => {
-            // 储存要更新的新路由
+            // 储存系统权限
+            store.commit("app/SET_ROLES", response);
+            // 储存角色，要更新的新路由
             store.dispatch("permission/createRouter", response);
             let addRoutesArray = store.getters["permission/addRouter"];
             let allRoutesArray = store.getters["permission/allRouter"];
             // 路由更新
             router.options.routes = allRoutesArray;
             // 添加动态路由
-            router.addRoutes(addRoutesArray);
+            router.addRoutes(addRoutesArray); 
             // replace参数，不被记入历史记录，不能进行路由返回
             next({ ...to, replace: true }); // ...to，es6扩展运算符，防止内容发生变化的情况
           })
