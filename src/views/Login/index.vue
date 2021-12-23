@@ -324,14 +324,14 @@ export default {
             message: response.data.message,
             type: "success",
           });
-
           // 启用登录/注册按钮
           loginButtonStatus.value = false;
-
           // 倒计时定时器
           countDown(5);
         })
         .catch((error) => {
+          // 启用登录/注册按钮
+          loginButtonStatus.value = false;
           console.log(error);
         });
     };
@@ -483,6 +483,12 @@ export default {
      */
     onMounted(() => {
       //   console.log(process.env.VUE_APP_ABC);
+    });
+
+    // 销毁时
+    onUnmounted(() => {
+      // 清除定时器
+      clearInterval(timerCountDown.value);
     });
 
     return {

@@ -142,9 +142,10 @@ export default {
           });
           // 取消按钮加载中状态
           submit_loading_flag.value = false;
-          resetForm();
-          // 成功后关闭新增页面
-          emit("update:openFlag", false);
+          // 关闭新增对话框
+          closeDialog();
+          // 刷新数据，回调父组件方法
+          emit("loadData");
         })
         .catch((error) => {
           console.log(error);

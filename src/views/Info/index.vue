@@ -152,6 +152,7 @@
     <DialogInfo
       :openFlag.sync="dialog_info_add_flag"
       :category="formType_options.category"
+      @loadData="getInfo"
     />
     <!-- 编辑弹窗 -->
     <DialogInfoEdit
@@ -166,7 +167,7 @@
 <script>
 import DialogInfo from "./dialog/info";
 import DialogInfoEdit from "./dialog/infoEdit";
-import { ref, reactive, onMounted, watch } from "@vue/composition-api";
+import { ref, reactive, onMounted, watch, onUnmounted } from "@vue/composition-api";
 import { global } from "@/utils/global.js";
 import { timestampToTime } from "@/utils/common";
 export default {
