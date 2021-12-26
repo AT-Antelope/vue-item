@@ -116,7 +116,14 @@
 <script>
 import sha1 from "js-sha1";
 import { GetSms, Login, Register } from "@/api/login.js";
-import { reactive, ref, isRef, toRef, onMounted } from "@vue/composition-api";
+import {
+  reactive,
+  ref,
+  isRef,
+  toRef,
+  onMounted,
+  onUnmounted,
+} from "@vue/composition-api";
 // 在vue.config.js里配置了解析别名(alias)
 // 同样配置了自动添加后缀名后，可以省略后缀名
 import { stripscript, validateEmail, validatePwd, validateCode } from "@/utils/validate";

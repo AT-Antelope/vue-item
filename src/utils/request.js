@@ -5,7 +5,10 @@ import axios from "axios";
 import { Message } from "element-ui";
 import { getToken, getUserName } from "@/utils/app";
 
-const BASEURL = process.env.NODE_ENV === "production" ? "" : "/devApi";
+const BASEURL =
+  process.env.NODE_ENV === "production"
+    ? process.env.VUE_APP_API
+    : process.env.VUE_APP_API;
 
 const service = axios.create({
   baseURL: BASEURL,
